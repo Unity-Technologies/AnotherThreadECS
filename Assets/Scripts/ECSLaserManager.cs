@@ -132,10 +132,10 @@ public class ECSLaserManager : MonoBehaviour
         var entity_manager = Unity.Entities.World.Active.GetOrCreateManager<EntityManager>();
         archetype_ = entity_manager.CreateArchetype(typeof(Destroyable)
                                                     , typeof(Position)
-                                                    , typeof(TransformMatrix)
+                                                    , typeof(LocalToWorld)
                                                     , typeof(RigidbodyPosition)
                                                     , typeof(TrailData)
-                                                    , ComponentType.FixedArray(typeof(TrailPoint), TrailConfig.NODE_NUM)
+                                                    , typeof(TrailPoint)
                                                     , typeof(LaserData)
                                                     , typeof(TrailRenderer)
                                                     );
@@ -184,7 +184,7 @@ public class ECSLaserManager : MonoBehaviour
                                float arrive_period)
     {
         command_buffer.CreateEntity(archetype_);
-        command_buffer.SetComponent(new Position(position));
+        command_buffer.SetComponent(new Position { Value = position, });
         command_buffer.SetComponent(new LaserData {
                 end_time_ = CV.MaxValue,
                 target_entity_ = target,
@@ -202,6 +202,14 @@ public class ECSLaserManager : MonoBehaviour
             color_type_ = (int)TrailManager.ColorType.Green,
         };
         command_buffer.SetComponent(td);
+
+        {
+            var buffer = command_buffer.SetBuffer<TrailPoint>();
+            for (var i = 0; i < buffer.Capacity; ++i) {
+                buffer.Add(new TrailPoint { position_ = position, normal_ = new float3(0f, 0f, 1f), });
+            }
+        }
+
         var material = TrailManager.Instance.getMaterial();
 		var renderer = new TrailRenderer {
 			material_ = material,

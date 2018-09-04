@@ -2,7 +2,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
-// using Unity.Rendering;
+using Unity.Rendering;
 using UnityEngine;
 // using UnityEngine.Assertions;
 
@@ -79,11 +79,11 @@ public class ECSSparkManager : MonoBehaviour
 		arche_type_ = entity_manager.CreateArchetype(typeof(Destroyable)
                                                      , typeof(Position)
                                                      , typeof(Rotation)
-                                                     , typeof(TransformMatrix)
+                                                     , typeof(LocalToWorld)
                                                      , typeof(AlivePeriod)
                                                      , typeof(StartTime)
                                                      , typeof(Spark)
-                                                     , typeof(MeshInstanceRendererWithTime)
+                                                     , typeof(MeshInstanceRenderer)
                                                      );
 		material_spark_ = new Material(material_.shader);
 		material_spark_.enableInstancing = true;
@@ -95,9 +95,9 @@ public class ECSSparkManager : MonoBehaviour
         const int PARTICLE_NUM = 64;
         Vector3[] vertices = new Vector3[PARTICLE_NUM*2];
         for (var i = 0; i < PARTICLE_NUM; ++i) {
-			float x = Random.Range(-1f, 1f);
-			float y = Random.Range(-1f, 1f);
-			float z = Random.Range(-1f, 1f);
+			float x = UnityEngine.Random.Range(-1f, 1f);
+			float y = UnityEngine.Random.Range(-1f, 1f);
+			float z = UnityEngine.Random.Range(-1f, 1f);
 			float len2 = x*x + y*y + z*z;
 			float len = Mathf.Sqrt(len2);
 			float rlen = 1.0f/len;
@@ -181,14 +181,14 @@ public class ECSSparkManager : MonoBehaviour
 		entity_command_buffer.SetComponent(new Rotation { Value = quaternion.identity, });
 		entity_command_buffer.SetComponent(new AlivePeriod { start_time_ = current_time, period_ = 1f, });
 		entity_command_buffer.SetComponent(new StartTime { value_ = current_time, });
-		entity_command_buffer.SetSharedComponent(new MeshInstanceRendererWithTime {
+		entity_command_buffer.SetSharedComponent(new MeshInstanceRenderer {
                                                      mesh = mesh_,
                                                      material = mat,
                                                      castShadows = UnityEngine.Rendering.ShadowCastingMode.Off,
                                                      receiveShadows = false,
-                                                     camera = camera_,
-                                                     needDT = true,
-                                                     needPrevMatrix = true,
+                                                     // camera = camera_,
+                                                     // needDT = true,
+                                                     // needPrevMatrix = true,
                                                  });
 	}
 }

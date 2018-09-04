@@ -19,10 +19,9 @@ public class SystemManagerSystem : ComponentSystem
         /*
          * work around of TOO MUCH stripping.
          */
-        new Unity.Transforms.TransformSystem();
         new Unity.Rendering.MeshInstanceRendererSystem();
-        new Unity.Rendering.MeshCullingBarrier();
-        new Unity.Rendering.MeshFrustumCullingSystem();
+        // new Unity.Rendering.MeshCullingBarrier();
+        // new Unity.Rendering.MeshFrustumCullingSystem();
         /**/
         // TypeManager.GetTypeIndex(typeof(Locked));
         RandomMaker.initialize(12345L);

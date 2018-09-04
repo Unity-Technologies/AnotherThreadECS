@@ -41,6 +41,10 @@ public class GameCameraUpdateSystem : JobComponentSystem
     }
     [Inject] Group group_;
     
+    JobHandle handle_;
+    public JobHandle Fence { get { return handle_; } }
+    public void Sync() { handle_.Complete(); }
+
     [BurstCompile]
     struct Job : IJobParallelFor
     {
@@ -79,7 +83,7 @@ public class GameCameraUpdateSystem : JobComponentSystem
 
 	protected override JobHandle OnUpdate(JobHandle inputDeps)
 	{
-        var handle = inputDeps;
+        handle_ = inputDeps;
         
 		var job = new Job {
             game_camera_list_ = group_.game_camera_list_,
@@ -88,9 +92,9 @@ public class GameCameraUpdateSystem : JobComponentSystem
             player_list_from_entity_ = player_list_from_entity_,
             position_list_from_entity_ = position_list_from_entity_,
         };
-		handle = job.Schedule(group_.Length, 8, handle);
+		handle_ = job.Schedule(group_.Length, 8, handle_);
 
-        return handle;
+        return handle_;
     }    
 }
 

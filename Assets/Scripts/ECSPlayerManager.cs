@@ -3,7 +3,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Transforms;
 using Unity.Mathematics;
-// using Unity.Rendering;
+using Unity.Rendering;
 using Unity.Jobs;
 using Unity.Burst;
 using UnityEngine;
@@ -83,6 +83,8 @@ public class PlayerSystem : JobComponentSystem
 
     [UpdateBefore(typeof(Unity.Rendering.MeshInstanceRendererSystem))] class PlayerBarrier : BarrierSystem {}
     [Inject] PlayerBarrier barrier_;
+
+    [Inject] GameCameraUpdateSystem game_camera_update_system_;
 
     protected override void OnStopRunning()
     {
@@ -293,6 +295,7 @@ public class PlayerSystem : JobComponentSystem
 	protected override JobHandle OnUpdate(JobHandle inputDeps)
 	{
         CursorSystem.Sync();
+        game_camera_update_system_.Sync();
 
         handle_ = inputDeps;
 
@@ -413,30 +416,27 @@ public class ECSPlayerManager : MonoBehaviour
         var entity_manager = Unity.Entities.World.Active.GetOrCreateManager<EntityManager>();
         player_archetype_ = entity_manager.CreateArchetype(typeof(Position)
                                                            , typeof(Rotation)
-                                                           , typeof(TransformMatrix)
+                                                           , typeof(LocalToWorld)
                                                            , typeof(RigidbodyPosition)
                                                            , typeof(SphereCollider)
                                                            , typeof(PlayerCollisionInfo)
                                                            , typeof(Player)
                                                            , typeof(PlayerController)
                                                            , typeof(PlayerControllerIndex)
-                                                           , typeof(CustomMeshInstanceRenderer)
+                                                           , typeof(MeshInstanceRenderer)
                                                            );
         cursor_archetype_ = entity_manager.CreateArchetype(typeof(Position)
                                                            , typeof(Rotation)
                                                            , typeof(ScreenPosition)
-                                                           , typeof(TransformMatrix)
+                                                           , typeof(LocalToWorld)
                                                            , typeof(RigidbodyPosition)
                                                            , typeof(Cursor)
                                                            );
-        burner_archetype_ = entity_manager.CreateArchetype(typeof(TransformParent)
-                                                           , typeof(LocalPosition)
-                                                           , typeof(LocalRotation)
-                                                           , typeof(Position)
-                                                           , typeof(Rotation)
-                                                           , typeof(TransformMatrix)
+        burner_archetype_ = entity_manager.CreateArchetype(typeof(Position)
+                                                           // , typeof(Rotation)
+                                                           // , typeof(LocalToWorld)
                                                            , typeof(TrailData)
-                                                           , ComponentType.FixedArray(typeof(TrailPoint), TrailConfig.NODE_NUM)
+                                                           , typeof(TrailPoint)
                                                            , typeof(TrailRenderer)
                                                            );
         player_spawn_idx_ = 0;
@@ -463,8 +463,8 @@ public class ECSPlayerManager : MonoBehaviour
         var entity_manager = Unity.Entities.World.Active.GetOrCreateManager<Unity.Entities.EntityManager>();
 
         var player_entity = entity_manager.CreateEntity(player_archetype_);
-        entity_manager.SetComponentData(player_entity, new Position(position));
-        entity_manager.SetComponentData(player_entity, new Rotation(rotation));
+        entity_manager.SetComponentData(player_entity, new Position { Value = position, });
+        entity_manager.SetComponentData(player_entity, new Rotation { Value = rotation, });
         float radius = CV.MAX_RADIUS - CV.PLAYER_WIDTH_HALF;
         entity_manager.SetComponentData(player_entity, new RigidbodyPosition { damper_ = 12f, limit_xy_tube_radius_ = radius, });
         entity_manager.SetComponentData(player_entity, new SphereCollider {
@@ -472,44 +472,54 @@ public class ECSPlayerManager : MonoBehaviour
                 radius_ = 1f,
             });
         entity_manager.SetComponentData(player_entity, new PlayerControllerIndex(0 /* index */));
-		var renderer = new CustomMeshInstanceRenderer {
+		var renderer = new MeshInstanceRenderer {
 			mesh = mesh_,
 			material = material_,
             subMesh = 0,
             castShadows = UnityEngine.Rendering.ShadowCastingMode.On,
             receiveShadows = true,
-            camera = camera_,
+            // camera = camera_,
 		};
 		entity_manager.SetSharedComponentData(player_entity, renderer);
 
         var cursor_entity = entity_manager.CreateEntity(cursor_archetype_);
         var cursor_position = new Vector3(position.x, position.y, position.z + 32f);
-        entity_manager.SetComponentData(cursor_entity, new Position(cursor_position));
+        entity_manager.SetComponentData(cursor_entity, new Position { Value = cursor_position, });
         entity_manager.SetComponentData(cursor_entity, new RigidbodyPosition(32f /* damper */));
-        entity_manager.SetComponentData(cursor_entity, new TransformMatrix { Value = float4x4.identity, });
+        entity_manager.SetComponentData(cursor_entity, new LocalToWorld { Value = float4x4.identity, });
         entity_manager.SetComponentData(cursor_entity, Cursor.Create(player_entity));
 
         entity_manager.SetComponentData(player_entity, Player.Create(cursor_entity, ref float_resource)); // bidirectional reference.
 
         {
             var burner_entity = entity_manager.CreateEntity(burner_archetype_);
-            entity_manager.SetComponentData(burner_entity, new LocalPosition(new float3(0.35f, 0.1f, -0.8f)));
-            entity_manager.SetComponentData(burner_entity, new LocalRotation(quaternion.identity));
-            entity_manager.SetComponentData(burner_entity, new TransformParent(player_entity));
+            entity_manager.SetComponentData(burner_entity, new Position { Value = new float3(0.35f, 0.1f, -0.8f), });
+            // entity_manager.SetComponentData(burner_entity, new Rotation { Value = quaternion.identity, });
             entity_manager.SetComponentData(burner_entity, new TrailData { color_type_ = (int)TrailManager.ColorType.Cyan, });
+            var buffer = entity_manager.GetBuffer<TrailPoint>(burner_entity);
+            for (var i = 0; i < buffer.Capacity; ++i) {
+                buffer.Add(new TrailPoint { position_ = position, normal_ = new float3(0f, 0f, 1f), });
+            }
             entity_manager.SetSharedComponentData(burner_entity, new TrailRenderer {
                     material_ = TrailManager.Instance.getMaterial(),
                 });
+            var attach_entity = entity_manager.CreateEntity(typeof(Attach));
+            entity_manager.SetComponentData(attach_entity, new Attach { Parent = player_entity, Child = burner_entity, });
         }
         {
             var burner_entity = entity_manager.CreateEntity(burner_archetype_);
-            entity_manager.SetComponentData(burner_entity, new LocalPosition(new float3(-0.35f, 0.1f, -0.8f)));
-            entity_manager.SetComponentData(burner_entity, new LocalRotation(quaternion.identity));
-            entity_manager.SetComponentData(burner_entity, new TransformParent(player_entity));
+            entity_manager.SetComponentData(burner_entity, new Position { Value = new float3(-0.35f, 0.1f, -0.8f), });
+            // entity_manager.SetComponentData(burner_entity, new Rotation { Value = quaternion.identity, });
             entity_manager.SetComponentData(burner_entity, new TrailData { color_type_ = (int)TrailManager.ColorType.Cyan, });
+            var buffer = entity_manager.GetBuffer<TrailPoint>(burner_entity);
+            for (var i = 0; i < buffer.Capacity; ++i) {
+                buffer.Add(new TrailPoint { position_ = position, normal_ = new float3(0f, 0f, 1f), });
+            }
             entity_manager.SetSharedComponentData(burner_entity, new TrailRenderer {
                     material_ = TrailManager.Instance.getMaterial(),
                 });
+            var attach_entity = entity_manager.CreateEntity(typeof(Attach));
+            entity_manager.SetComponentData(attach_entity, new Attach { Parent = player_entity, Child = burner_entity, });
         }
 
         ++player_spawn_idx_;

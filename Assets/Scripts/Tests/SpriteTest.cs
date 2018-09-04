@@ -17,7 +17,7 @@ public struct SpriteTestDummy : IComponentData
 {
 }
 
-[UpdateAfter(typeof(TransformSystem))]
+[UpdateAfter(typeof(EndFrameTransformSystem))]
 public class SpriteTestSystem : TestJobComponentSystem
 {
     struct Group {
@@ -25,7 +25,7 @@ public class SpriteTestSystem : TestJobComponentSystem
 #pragma warning disable 0169
         [ReadOnly] public ComponentDataArray<SpriteTestDummy> exists;
 #pragma warning restore 0169
-        public ComponentDataArray<TransformMatrix> transform_matrix_list_;
+        public ComponentDataArray<LocalToWorld> transform_matrix_list_;
     }
     [Inject] Group group_;
 
@@ -46,7 +46,7 @@ public class SpriteTestSystem : TestJobComponentSystem
         [ReadOnly] public ComponentDataArray<Camera> camera_list_;
         [ReadOnly] public ComponentDataArray<Position> position_list_;
         [ReadOnly] public ComponentDataArray<Rotation> rotation_list_;
-        [ReadOnly] public ComponentDataArray<TransformMatrix> transform_matrix_list_;
+        [ReadOnly] public ComponentDataArray<LocalToWorld> transform_matrix_list_;
         [NativeDisableContainerSafetyRestriction] public NativeBucket<SpriteData>.Concurrent sprite_data_list_;
         
         public void Execute(int i)
@@ -95,7 +95,7 @@ public class SpriteTest : MonoBehaviour
 		var arche_type = entity_manager.CreateArchetype(typeof(SpriteTestDummy)
                                                         , typeof(Position)
                                                         , typeof(Rotation)
-                                                        , typeof(TransformMatrix)
+                                                        , typeof(LocalToWorld)
                                                         );
 		var entity = entity_manager.CreateEntity(arche_type);
 		entity_manager.SetComponentData(entity, new Position { Value = new float3(1f, 2f, 10f), });

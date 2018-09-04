@@ -63,7 +63,7 @@ public class TrailTest : MonoBehaviour {
     {
         var entity_manager = Unity.Entities.World.Active.GetOrCreateManager<EntityManager>();
         archetype_ = entity_manager.CreateArchetype(typeof(Position)
-                                                    , typeof(TransformMatrix)
+                                                    , typeof(LocalToWorld)
                                                     , typeof(RigidbodyPosition)
                                                     , typeof(TrailData)
                                                     , typeof(TrailRenderer)
@@ -89,7 +89,7 @@ public class TrailTest : MonoBehaviour {
     {
         var entity_manager = Unity.Entities.World.Active.GetOrCreateManager<Unity.Entities.EntityManager>();
         var entity = entity_manager.CreateEntity(archetype_);
-        entity_manager.SetComponentData(entity, new Position(position));
+        entity_manager.SetComponentData(entity, new Position { Value = position, });
         entity_manager.SetComponentData(entity, new RigidbodyPosition(0f /* damper */));
         // var trail_buffer = TrailManager.Instance.getTrailBuffer();
         var td = new TrailData();
@@ -108,7 +108,7 @@ public class TrailTest : MonoBehaviour {
     {
         var pos = (Unity.Mathematics.float3)Vector3.zero;
         for (var i = 0; i < 256; ++i) {
-            spawn(ref pos, Random.Range(0, (int)TrailManager.ColorType.Max));
+            spawn(ref pos, UnityEngine.Random.Range(0, (int)TrailManager.ColorType.Max));
         }
     }
 }

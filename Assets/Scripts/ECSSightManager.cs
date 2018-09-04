@@ -2,7 +2,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
-// using Unity.Rendering;
+using Unity.Rendering;
 using Unity.Jobs;
 using Unity.Burst;
 using UnityEngine;
@@ -59,7 +59,7 @@ public class SightSystem : JobComponentSystem
         public readonly int Length;
         [WriteOnly] public ComponentDataArray<Destroyable> destroyable_list_;
         public ComponentDataArray<Sight> sight_list_;
-        [WriteOnly] public ComponentDataArray<TransformMatrix> matrix_list_;
+        [WriteOnly] public ComponentDataArray<LocalToWorld> matrix_list_;
     }
     [Inject] Group group_;
 
@@ -69,7 +69,7 @@ public class SightSystem : JobComponentSystem
         [ReadOnly] public ComponentDataFromEntity<ScreenPosition> screen_position_from_entity_;
         [WriteOnly] public ComponentDataArray<Destroyable> destroyable_list_;
         public ComponentDataArray<Sight> sight_list_;
-        [WriteOnly] public ComponentDataArray<TransformMatrix> matrix_list_;
+        [WriteOnly] public ComponentDataArray<LocalToWorld> matrix_list_;
 
         public void Execute(int i)
         {
@@ -80,7 +80,7 @@ public class SightSystem : JobComponentSystem
             }
             var sp = screen_position_from_entity_[sight.target_entity_];
             var prev_sp = sight.initialized_ != 0 ? sight.prev_screen_position_ : sp.Value;
-            matrix_list_[i] = new TransformMatrix {
+            matrix_list_[i] = new LocalToWorld {
                 Value = new float4x4(new float4(sp.Value, 1f),
                                      new float4(prev_sp, 1f),
                                      new float4(0f, 0f, 0f, 0f), // not in use
@@ -114,7 +114,7 @@ public class ECSSightManager : MonoBehaviour
 	public static ECSSightManager Instance { get { return instance_; } }
 
 	[SerializeField] Material material_;
-    [SerializeField] UnityEngine.Camera camera_;
+    // [SerializeField] UnityEngine.Camera camera_;
     NativeQueue<SightSpawnData> sight_spawn_data_queue_;
     Material material_sight_;
     Mesh mesh_;
@@ -139,8 +139,8 @@ public class ECSSightManager : MonoBehaviour
                                                      , typeof(AlivePeriod)
                                                      , typeof(StartTime)
                                                      , typeof(Sight)
-                                                     , typeof(TransformMatrix)
-                                                     , typeof(MeshInstanceRendererWithTime)
+                                                     , typeof(LocalToWorld)
+                                                     , typeof(MeshInstanceRenderer)
                                                      );
 		material_sight_ = new Material(material_.shader);
 		material_sight_.enableInstancing = true;
@@ -209,15 +209,15 @@ public class ECSSightManager : MonoBehaviour
 		entity_command_buffer.SetComponent(new AlivePeriod { start_time_ = current_time, period_ = 0.3f, });
 		entity_command_buffer.SetComponent(new StartTime { value_ = current_time, });
 		entity_command_buffer.SetComponent(new Sight { target_entity_ = target_entity, });
-		entity_command_buffer.SetSharedComponent(new MeshInstanceRendererWithTime {
+		entity_command_buffer.SetSharedComponent(new MeshInstanceRenderer {
                                                      mesh = mesh_,
                                                      material = mat,
                                                      castShadows = UnityEngine.Rendering.ShadowCastingMode.Off,
                                                      receiveShadows = false,
-                                                     camera = camera_,
-                                                     needDT = true,
-                                                     needPrevMatrix = false,
-                                                     layer = 9 /* final */,
+                                                     // camera = camera_,
+                                                     // needDT = true,
+                                                     // needPrevMatrix = false,
+                                                     // layer = 9 /* final */,
                                                  });
 	}
 }

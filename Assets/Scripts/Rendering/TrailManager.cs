@@ -24,7 +24,8 @@ public struct TrailData : IComponentData {
     public int trail_head_index_;
 }
 
-public struct TrailPoint
+[InternalBufferCapacity(TrailConfig.NODE_NUM)]
+public struct TrailPoint : IBufferElementData
 {
     public float3 position_;
     public float3 normal_;
@@ -43,7 +44,7 @@ public class TrailSystem : JobComponentSystem
         [ReadOnly] public EntityArray entity_list_;
 		[ReadOnly] public ComponentDataArray<Position> position_list_;
         public ComponentDataArray<TrailData> trail_data_list_;
-        public FixedArrayArray<TrailPoint> trail_points_list_;
+        public BufferArray<TrailPoint> trail_points_list_;
 	}
 	[Inject] Group group_;
 
@@ -90,7 +91,7 @@ public class TrailSystem : JobComponentSystem
         public float flow_z_;
         [ReadOnly] public ComponentDataArray<Position> position_list_;
         public ComponentDataArray<TrailData> trail_data_list_;
-        public FixedArrayArray<TrailPoint> trail_points_list_;
+        public BufferArray<TrailPoint> trail_points_list_;
 
 		public void Execute(int i)
 		{
@@ -127,7 +128,7 @@ public class TrailSystem : JobComponentSystem
     struct PackJob : IJob
     {
         [ReadOnly] public ComponentDataArray<TrailData> trail_data_list_;
-        [ReadOnly] public FixedArrayArray<TrailPoint> trail_points_list_;
+        [ReadOnly] public BufferArray<TrailPoint> trail_points_list_;
 
         public void Execute()
         {
@@ -171,7 +172,7 @@ public class TrailSystem : JobComponentSystem
     struct PackVerticesJob : IJob
     {
         [ReadOnly] public ComponentDataArray<TrailData> trail_data_list_;
-        [ReadOnly] public FixedArrayArray<TrailPoint> trail_points_list_;
+        [ReadOnly] public BufferArray<TrailPoint> trail_points_list_;
         public void Execute()
         {
             TrailSystem.ClearVertices();
@@ -194,7 +195,7 @@ public class TrailSystem : JobComponentSystem
     struct PackNormalsJob : IJob
     {
         [ReadOnly] public ComponentDataArray<TrailData> trail_data_list_;
-        [ReadOnly] public FixedArrayArray<TrailPoint> trail_points_list_;
+        [ReadOnly] public BufferArray<TrailPoint> trail_points_list_;
         public void Execute()
         {
             TrailSystem.ClearNormals();
@@ -316,7 +317,7 @@ public class TrailRendererSystem : ComponentSystem
         public readonly int Length;
         [ReadOnly] public EntityArray entity_list_;
 		[ReadOnly] public ComponentDataArray<TrailData> trail_data_list_;
-		[ReadOnly] public FixedArrayArray<TrailPoint> trail_points_list_;
+        [ReadOnly] public BufferArray<TrailPoint> trail_points_list_;
 	}
 	[Inject] Group group_;
 
@@ -402,10 +403,10 @@ public class TrailManager : MonoBehaviour
         var entity_manager = Unity.Entities.World.Active.GetOrCreateManager<EntityManager>();
         archetype_ = entity_manager.CreateArchetype(typeof(Destroyable)
                                                     , typeof(Position)
-                                                    , typeof(TransformMatrix)
+                                                    , typeof(LocalToWorld)
                                                     , typeof(RigidbodyPosition)
                                                     , typeof(TrailData)
-                                                    , ComponentType.FixedArray(typeof(TrailPoint), TrailConfig.NODE_NUM)
+                                                    , typeof(TrailPoint)
                                                     , typeof(TrailRenderer)
                                                     );
         material_.SetVectorArray("_color_table", color_shared_data_);
@@ -434,15 +435,15 @@ public class TrailManager : MonoBehaviour
     {
         var entity_manager = Unity.Entities.World.Active.GetOrCreateManager<Unity.Entities.EntityManager>();
         var entity = entity_manager.CreateEntity(archetype_);
-        entity_manager.SetComponentData(entity, new Position(position));
+        entity_manager.SetComponentData(entity, new Position { Value = position, });
         entity_manager.SetComponentData(entity, new RigidbodyPosition(0f /* damper */));
         var td = new TrailData();
         td.color_type_ = (int)coltype;
         entity_manager.SetComponentData(entity, td);
         {
-            var array = entity_manager.GetFixedArray<TrailPoint>(entity);
-            for (var i = 0; i < array.Length; ++i) {
-                array[i] = new TrailPoint { position_ = position, normal_ = new float3(0f, 0f, 1f), };
+            var buffer = entity_manager.GetBuffer<TrailPoint>(entity);
+            for (var i = 0; i < buffer.Capacity; ++i) {
+                buffer.Add(new TrailPoint { position_ = position, normal_ = new float3(0f, 0f, 1f), });
             }
         }
 		var renderer = new TrailRenderer {

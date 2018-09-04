@@ -45,28 +45,10 @@ public class LockTargetSystem : JobComponentSystem
     {
         public readonly int Length;
         [ReadOnly] public ComponentDataArray<LockTarget> locktarget_list_;
-        [ReadOnly] public ComponentDataArray<TransformParent> parent_list_;
         [ReadOnly] public ComponentDataArray<ScreenPosition> screen_position_list_;
         [WriteOnly] public ComponentDataArray<Destroyable> destroyable_list_;
     }
     [Inject] Group group_;
-
-    [BurstCompile]
-    struct CleanupJob : IJobParallelFor
-    {
-        public float time_;
-        [ReadOnly] public ComponentDataFromEntity<Position> position_list_from_entity_;
-        [ReadOnly] public ComponentDataArray<TransformParent> parent_list_;
-        [WriteOnly] public ComponentDataArray<Destroyable> destroyable_list_;
-
-        public void Execute(int i)
-        {
-            TransformParent parent = parent_list_[i];
-            if (!position_list_from_entity_.Exists(parent.Value)) {
-                destroyable_list_[i] = Destroyable.Kill;
-            }
-        }
-    }
 
     [BurstCompile]
     struct LockonMarkJob : IJobParallelFor
@@ -98,14 +80,6 @@ public class LockTargetSystem : JobComponentSystem
 	{
         var handle = inputDeps;
 
-        var cleanup_job = new CleanupJob {
-            time_ = Time.GetCurrent(),
-            position_list_from_entity_ = position_list_from_entity_,
-            parent_list_ = group_.parent_list_,
-            destroyable_list_ = group_.destroyable_list_,
-        };
-        handle = cleanup_job.Schedule(group_.Length, 8, handle);
-
         var lockon_mark_job = new LockonMarkJob {
             time_ = Time.GetCurrent(),
             locktarget_list_ = group_.locktarget_list_,
@@ -128,13 +102,10 @@ public static class LockTargetManager
         var entity_manager = World.Active.GetOrCreateManager<EntityManager>();
         archetype_ = entity_manager.CreateArchetype(typeof(Destroyable)
                                                     , typeof(LockTarget)
-                                                    , typeof(TransformParent)
-                                                    , typeof(LocalPosition)
-                                                    , typeof(LocalRotation)
                                                     , typeof(Position)
                                                     , typeof(Rotation)
                                                     , typeof(ScreenPosition)
-                                                    , typeof(TransformMatrix)
+                                                    , typeof(LocalToWorld)
                                                     , typeof(RandomLocal)
                                                     );
     }
@@ -148,10 +119,13 @@ public static class LockTargetManager
     {
         var entity = entity_manager.CreateEntity(archetype_);
         entity_manager.SetComponentData(entity, LockTarget.Create(ref life));
-        entity_manager.SetComponentData(entity, new LocalPosition(localPos));
-        entity_manager.SetComponentData(entity, new LocalRotation(localRot));
-        entity_manager.SetComponentData(entity, new TransformParent(parent_entity));
+        entity_manager.SetComponentData(entity, new Position { Value = localPos, });
+        entity_manager.SetComponentData(entity, new Rotation { Value = localRot, });
         entity_manager.SetComponentData(entity, random.create());
+
+        var attach_entity = entity_manager.CreateEntity(typeof(Attach));
+        entity_manager.SetComponentData(attach_entity, new Attach { Parent = parent_entity, Child = entity, });
+
         return entity;
     }
 }

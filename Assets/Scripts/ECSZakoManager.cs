@@ -3,7 +3,7 @@ using Unity.Entities;
 using Unity.Collections;
 using Unity.Transforms;
 using Unity.Mathematics;
-// using Unity.Rendering;
+using Unity.Rendering;
 using Unity.Jobs;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
@@ -32,6 +32,8 @@ public class ZakoSystem : JobComponentSystem
         [WriteOnly] public ComponentDataArray<Destroyable> destroyable_list_;
 	}
 	[Inject] Group group_;
+
+    [Inject] RigidbodyPositionSystem rigidbody_position_system_;
 
     static JobHandle handle_;
     public static JobHandle Fence { get { return handle_; } }
@@ -86,6 +88,8 @@ public class ZakoSystem : JobComponentSystem
 
 	protected override JobHandle OnUpdate(JobHandle inputDeps)
 	{
+        rigidbody_position_system_.Sync();
+
         handle_ = inputDeps;
         
         Entity player_entity = SystemManager.Instance.getPrimaryPlayer();
@@ -131,7 +135,7 @@ public class ECSZakoManager : MonoBehaviour
         archetype_ = entity_manager.CreateArchetype(typeof(Destroyable)
                                                     , typeof(Position)
                                                     , typeof(Rotation)
-                                                    , typeof(TransformMatrix)
+                                                    , typeof(LocalToWorld)
                                                     , typeof(RigidbodyPosition)
                                                     , typeof(RigidbodyRotation)
                                                     , typeof(RandomLocal)
@@ -140,7 +144,7 @@ public class ECSZakoManager : MonoBehaviour
                                                     , typeof(AlivePeriod)
                                                     , typeof(Enemy)
                                                     , typeof(Zako)
-                                                    , typeof(CustomMeshInstanceRenderer)
+                                                    , typeof(MeshInstanceRenderer)
                                                     );
 	}
 	
@@ -165,8 +169,8 @@ public class ECSZakoManager : MonoBehaviour
     {
         var entity_manager = Unity.Entities.World.Active.GetOrCreateManager<Unity.Entities.EntityManager>();
         var entity = entity_manager.CreateEntity(archetype_);
-        entity_manager.SetComponentData(entity, new Position(position));
-        entity_manager.SetComponentData(entity, new Rotation(rotation));
+        entity_manager.SetComponentData(entity, new Position { Value = position, });
+        entity_manager.SetComponentData(entity, new Rotation { Value = rotation, });
         entity_manager.SetComponentData(entity, new RigidbodyRotation(10f /* damper */));
         entity_manager.SetComponentData(entity, random.create());
         entity_manager.SetComponentData(entity, new SphereCollider {
@@ -177,13 +181,12 @@ public class ECSZakoManager : MonoBehaviour
         var enemy = Enemy.Create(ref float_resource);
         entity_manager.SetComponentData(entity, enemy);
         entity_manager.SetComponentData(entity, new Zako { target_position_ = new float3(random.range(-20f, 20f), random.range(-20f, 20f), 0f), });
-		var renderer = new CustomMeshInstanceRenderer {
+		var renderer = new MeshInstanceRenderer {
 			mesh = mesh_,
 			material = material_,
             subMesh = 0,
             castShadows = UnityEngine.Rendering.ShadowCastingMode.Off,
             receiveShadows = true,
-            camera = camera_,
 		};
 		entity_manager.SetSharedComponentData(entity, renderer);
 

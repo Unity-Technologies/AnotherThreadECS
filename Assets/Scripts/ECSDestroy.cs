@@ -1,7 +1,8 @@
 using Unity.Entities;
 using Unity.Collections;
 using Unity.Jobs;
-// using Unity.Burst;
+using Unity.Transforms;
+using Unity.Burst;
 
 namespace UTJ {
 
@@ -22,9 +23,19 @@ public class DestroyableSsytem : JobComponentSystem
     }
     [Inject] Group group_;
     
+    [Inject] [ReadOnly] ComponentDataFromEntity<Destroyable> destroyable_list_from_entity_;
+    struct ChildGroup
+    {
+        public readonly int Length;
+        [ReadOnly] public EntityArray entity_list_;
+        [ReadOnly] public ComponentDataArray<Parent> parent_list_;
+    }
+    [Inject] ChildGroup child_group_;
+
     [UpdateBefore(typeof(Unity.Rendering.MeshInstanceRendererSystem))] class DestroyBarrier : BarrierSystem {}
     [Inject] DestroyBarrier barrier_;
 
+    [BurstCompile]
     struct Job : IJobParallelFor
     {
         public EntityCommandBuffer.Concurrent command_buffer_;
@@ -40,22 +51,42 @@ public class DestroyableSsytem : JobComponentSystem
         }
     }
 
+    [BurstCompile]
+    struct CleanJob : IJobParallelFor
+    {
+        public EntityCommandBuffer.Concurrent command_buffer_;
+        [ReadOnly] public ComponentDataFromEntity<Destroyable> destroyable_list_from_entity_;
+        [ReadOnly] public EntityArray entity_list_;
+		[ReadOnly] public ComponentDataArray<Parent> parent_list_;
+
+        public void Execute(int i)
+        {
+            Parent parent = parent_list_[i];
+            if (!destroyable_list_from_entity_.Exists(parent.Value) ||
+                destroyable_list_from_entity_[parent.Value].killed_ != 0) {
+                command_buffer_.DestroyEntity(entity_list_[i]);
+            }
+        }
+    }
+
 	protected override JobHandle OnUpdate(JobHandle inputDep)
     {
         var handle = inputDep;
 
-        // for (int i = 0; i < group_.destroyable_list_.Length; ++i) {
-        //     var destroyable = group_.destroyable_list_[i];
-        //     if (destroyable.killed_ != 0) {
-        //         PostUpdateCommands.DestroyEntity(group_.entity_list_[i]);
-        //     }
-        // }
         var job = new Job {
             command_buffer_ = barrier_.CreateCommandBuffer(),
             entity_list_ = group_.entity_list_,
             destroyable_list_ = group_.destroyable_list_,
         };
         handle = job.Schedule(group_.Length, 32, handle);
+
+        var cjob = new CleanJob {
+            command_buffer_ = barrier_.CreateCommandBuffer(),
+            destroyable_list_from_entity_ = destroyable_list_from_entity_,
+            entity_list_ = child_group_.entity_list_,
+            parent_list_ = child_group_.parent_list_,
+        };
+        handle = cjob.Schedule(child_group_.Length, 32, handle);
 
         return handle;
     }

@@ -2,7 +2,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
-// using Unity.Rendering;
+using Unity.Rendering;
 using UnityEngine;
 
 namespace UTJ {
@@ -73,10 +73,10 @@ public class ECSExplosionManager : MonoBehaviour
 		arche_type_ = entity_manager.CreateArchetype(typeof(Destroyable)
                                                      , typeof(Position)
 													 , typeof(Rotation)
-													 , typeof(TransformMatrix)
+													 , typeof(LocalToWorld)
 													 , typeof(AlivePeriod)
 													 , typeof(StartTime)
-													 , typeof(MeshInstanceRendererWithTime)
+													 , typeof(MeshInstanceRenderer)
 													 );
         Vector3[] vertices = new Vector3[4];
         Vector2[] uvs = {
@@ -124,7 +124,7 @@ public class ECSExplosionManager : MonoBehaviour
                 period_ = 0.8f,
             });
 		entity_command_buffer.SetComponent(new StartTime { value_ = current_time, });
-		var renderer = new MeshInstanceRendererWithTime {
+		var renderer = new MeshInstanceRenderer {
 			mesh = mesh_,
 			material = material_,
             subMesh = 0,

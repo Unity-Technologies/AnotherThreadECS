@@ -107,6 +107,10 @@ public struct RigidbodyRotation : IComponentData
 // [UpdateBefore(typeof(TransformSystem))]
 public class RigidbodyPositionSystem : JobComponentSystem
 {
+    JobHandle handle_;
+    public JobHandle Fence { get { return handle_; } }
+    public void Sync() { handle_.Complete(); }
+
     [BurstCompile]
 	struct RigidbodyPositionJob : IJobProcessComponentData<Position, RigidbodyPosition>
 	{
@@ -131,14 +135,14 @@ public class RigidbodyPositionSystem : JobComponentSystem
 
 	protected override JobHandle OnUpdate(JobHandle inputDeps)
 	{
-        var handle = inputDeps;
+        handle_ = inputDeps;
 
 		var job = new RigidbodyPositionJob {
             dt_ = Time.GetDT(),
 		};
-		handle = job.Schedule(this, 8, handle);
+		handle_ = job.Schedule(this, 8, handle_);
 
-		return handle;
+		return handle_;
 	}
 }
 

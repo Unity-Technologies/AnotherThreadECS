@@ -34,18 +34,20 @@
  			
 			float4 _Color;
 			float _CurrentTime;
-			float _StartTimes[1023];
+//			float _StartTimes[1023];
             float _DT;
  			float4x4 _PrevInvMatrix;
 
             v2f vert(appdata v)
             {
 				UNITY_SETUP_INSTANCE_ID(v);
-#if defined(UNITY_INSTANCING_ENABLED)
-				float elapsed = _CurrentTime - _StartTimes[unity_InstanceID];
-#else
-				float elapsed = 1;
-#endif
+// #if defined(UNITY_INSTANCING_ENABLED)
+// 				float elapsed = _CurrentTime - _StartTimes[unity_InstanceID];
+// #else
+// 				float elapsed = 1;
+// #endif
+                float start_time = unity_ObjectToWorld._m30;
+                float elapsed = _CurrentTime - start_time;
                 float edge = v.vertexID % 2;
 
                 float flow_z = -48/2;
@@ -53,15 +55,17 @@
             	float3 tv0 = v.vertex.xyz;
                 tv0 *= elapsed * speed * _DT;
                 tv0.z += elapsed * flow_z;
-				float4 v0 = UnityObjectToClipPos(float4(tv0, 1));
+				// float4 v0 = UnityObjectToClipPos(float4(tv0, 1));
+                float4 v0 = mul(UNITY_MATRIX_VP, float4(mul(unity_ObjectToWorld, float4(tv0, 1.0)).xyz, 1));
 
                 float3 tv1 = v.vertex.xyz;
                 tv1 *= (elapsed-_DT) * speed * _DT;
                 tv1.z += (elapsed-_DT) * flow_z;
-                tv1 = UnityObjectToViewPos(float4(tv1, 1));
+                // tv1 = UnityObjectToViewPos(float4(tv1, 1));
+                tv1 = mul(UNITY_MATRIX_V, float4(mul(unity_ObjectToWorld, float4(tv1, 1.0)).xyz, 1)).xyz;
                 float4 v1 = mul(_PrevInvMatrix, float4(tv1, 1));
                 v1 = mul(UNITY_MATRIX_P, v1);
-
+                
                 float4 v01 = lerp(v0, v1, edge);
 
 				v2f o;

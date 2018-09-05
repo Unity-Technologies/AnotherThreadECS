@@ -16,7 +16,7 @@ public struct SparkTestDummy : IComponentData
 {
 }
 
-public class SparkTestSystem : TestJobComponentSystem
+public class SparkTestSystem : JobComponentSystem
 {
     struct Group {
 #pragma warning disable 0169

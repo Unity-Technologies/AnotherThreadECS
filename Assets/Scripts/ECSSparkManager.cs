@@ -79,7 +79,7 @@ public class ECSSparkManager : MonoBehaviour
 		arche_type_ = entity_manager.CreateArchetype(typeof(Destroyable)
                                                      , typeof(Position)
                                                      , typeof(Rotation)
-                                                     , typeof(LocalToWorld)
+                                                     , typeof(CustomLocalToWorld)
                                                      , typeof(AlivePeriod)
                                                      , typeof(StartTime)
                                                      , typeof(Spark)
@@ -121,6 +121,17 @@ public class ECSSparkManager : MonoBehaviour
     {
         spark_spawn_data_queue_.Dispose();
     }
+
+    Matrix4x4 m_PrevInvMatrix;
+
+    // void Update()               // tmp
+    // {
+    //     material_spark_.SetFloat("_CurrentTime", Time.GetCurrent());
+    //     material_spark_.SetFloat("_DT", Time.GetDT());
+    //     var matrix = m_PrevInvMatrix * camera_.cameraToWorldMatrix; // prev-view * inverted-cur-view
+    //     material_spark_.SetMatrix("_PrevInvMatrix", matrix);
+    //     m_PrevInvMatrix = camera_.worldToCameraMatrix;
+    // }
 
     public static void spawn(EntityCommandBuffer command_buffer,
                              float current_time,

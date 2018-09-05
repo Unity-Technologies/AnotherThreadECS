@@ -511,7 +511,6 @@ namespace UTJ
                     var renderer = EntityManager.GetSharedComponentData<CustomMeshInstanceRenderer>(lastRendererIndex);
                     if (renderer.mesh && renderer.material)
                     {
-                        Debug.Log(batchCount);
                         Graphics.DrawMeshInstanced(renderer.mesh, renderer.subMesh, renderer.material, m_MatricesArray,
                             batchCount, null, renderer.castShadows, renderer.receiveShadows, renderer.layer, ActiveCamera);
                     }
@@ -532,7 +531,6 @@ namespace UTJ
                 var renderer = EntityManager.GetSharedComponentData<CustomMeshInstanceRenderer>(lastRendererIndex);
                 if (renderer.mesh && renderer.material)
                 {
-                    Debug.Log(batchCount);
                     Graphics.DrawMeshInstanced(renderer.mesh, renderer.subMesh, renderer.material, m_MatricesArray,
                         batchCount, null, renderer.castShadows, renderer.receiveShadows, renderer.layer, ActiveCamera);
                 }

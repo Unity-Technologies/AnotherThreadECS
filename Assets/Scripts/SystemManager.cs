@@ -99,6 +99,7 @@ public class SystemManager : MonoBehaviour {
     }
 
     public Entity getPrimaryPlayer() { return primary_player_entity_; }
+    public UnityEngine.Camera getMainCamera() { return main_camera_; }
 
     void OnEnable()
     {

@@ -24,7 +24,7 @@ public struct LaserData : IComponentData
 
 public class LaserSystem : JobComponentSystem
 {
-    [Inject] [ReadOnly] public ComponentDataFromEntity<Position> position_list_from_entity_;
+    [Inject] [ReadOnly] public ComponentDataFromEntity<LocalToWorld> local_to_world_list_from_entity_;
 
 	struct Group
 	{
@@ -51,7 +51,7 @@ public class LaserSystem : JobComponentSystem
         public ComponentDataArray<LaserData> laser_list_;
 		[ReadOnly] public ComponentDataArray<Position> position_list_;
         public ComponentDataArray<RigidbodyPosition> rb_position_list_;
-        [ReadOnly] public ComponentDataFromEntity<Position> position_list_from_entity_;
+        [ReadOnly] public ComponentDataFromEntity<LocalToWorld> local_to_world_list_from_entity_;
         [ReadOnly] public ComponentDataArray<TrailData> trail_data_list_;
         [WriteOnly] public ComponentDataArray<Destroyable> destroyable_list_;
         [NativeDisableContainerSafetyRestriction] [WriteOnly] public NativeQueue<ExplosionSpawnData>.Concurrent explosion_spawner_;
@@ -65,14 +65,14 @@ public class LaserSystem : JobComponentSystem
                     rb.resetForce();
                     rb.resetVelocity(0f, 0f, flow_z_);
                 } else {
-                    if (!position_list_from_entity_.Exists(ld.target_entity_)) { // target vanished.
+                    if (!local_to_world_list_from_entity_.Exists(ld.target_entity_)) { // target vanished.
                         ld.setEnd(time_);
                         rb.resetVelocity(0f, 0f, flow_z_);
                     } else if (0f < ld.arrive_period_) {
                         var pos = position_list_[i];
                         if (ld.arrive_period_ <= 1f) {
-                            var target_pos = position_list_from_entity_[ld.target_entity_];
-                            var diff = target_pos.Value - pos.Value;
+                            var target_pos = local_to_world_list_from_entity_[ld.target_entity_].Value.c3.xyz;
+                            var diff = target_pos - pos.Value;
                             var t = ld.arrive_period_;
                             var t2 = t * t;
                             var a = ((diff - rb.velocity_ * t) * 2f)/t2;
@@ -109,7 +109,7 @@ public class LaserSystem : JobComponentSystem
             laser_list_ = group_.laser_list_,
             position_list_ = group_.position_list_,
             rb_position_list_ = group_.rb_position_list_,
-            position_list_from_entity_ = position_list_from_entity_,
+            local_to_world_list_from_entity_ = local_to_world_list_from_entity_,
             trail_data_list_ = group_.trail_data_list_,
             destroyable_list_ = group_.destroyable_list_,
             explosion_spawner_ = ECSExplosionManager.GetExplosionSpawnDataQueue(),

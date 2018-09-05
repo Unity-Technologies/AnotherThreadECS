@@ -20,7 +20,7 @@ public class ScreenPositionSystem : JobComponentSystem
     struct Group
     {
         public readonly int Length;
-        [ReadOnly] public ComponentDataArray<Position> position_list_;
+        [ReadOnly] public ComponentDataArray<LocalToWorld> local_to_world_list_;
         [WriteOnly] public ComponentDataArray<ScreenPosition> screen_position_list_;
     }
     [Inject] Group group_;
@@ -36,14 +36,14 @@ public class ScreenPositionSystem : JobComponentSystem
     struct Job : IJobParallelFor
     {
         [ReadOnly] public ComponentDataArray<Camera> camera_list_;
-        [ReadOnly] public ComponentDataArray<Position> position_list_;
+        [ReadOnly] public ComponentDataArray<LocalToWorld> local_to_world_list_;
         [WriteOnly] public ComponentDataArray<ScreenPosition> screen_position_list_;
 
         public void Execute(int i)
         {
             var camera = camera_list_[0];
-            var pos = position_list_[i];
-            var screen_pos = camera.getSpritePosition(ref pos.Value);
+            var pos = local_to_world_list_[i].Value.c3.xyz;
+            var screen_pos = camera.getSpritePosition(ref pos);
             screen_position_list_[i] = new ScreenPosition { Value = screen_pos, };
         }
     }
@@ -55,7 +55,7 @@ public class ScreenPositionSystem : JobComponentSystem
         Assert.AreEqual(camera_group_.Length, 1);
         var job = new Job {
             camera_list_ = camera_group_.camera_list_,
-            position_list_ = group_.position_list_,
+            local_to_world_list_ = group_.local_to_world_list_,
             screen_position_list_ = group_.screen_position_list_,
         };
         handle = job.Schedule(group_.Length, 8, handle);

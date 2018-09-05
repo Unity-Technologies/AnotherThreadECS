@@ -140,7 +140,7 @@ public class ECSSightManager : MonoBehaviour
                                                      , typeof(StartTime)
                                                      , typeof(Sight)
                                                      , typeof(LocalToWorld)
-                                                     , typeof(MeshInstanceRenderer)
+                                                     , typeof(CustomMeshInstanceRenderer)
                                                      );
 		material_sight_ = new Material(material_.shader);
 		material_sight_.enableInstancing = true;
@@ -209,7 +209,7 @@ public class ECSSightManager : MonoBehaviour
 		entity_command_buffer.SetComponent(new AlivePeriod { start_time_ = current_time, period_ = 0.3f, });
 		entity_command_buffer.SetComponent(new StartTime { value_ = current_time, });
 		entity_command_buffer.SetComponent(new Sight { target_entity_ = target_entity, });
-		entity_command_buffer.SetSharedComponent(new MeshInstanceRenderer {
+		entity_command_buffer.SetSharedComponent(new CustomMeshInstanceRenderer {
                                                      mesh = mesh_,
                                                      material = mat,
                                                      castShadows = UnityEngine.Rendering.ShadowCastingMode.Off,
@@ -217,7 +217,7 @@ public class ECSSightManager : MonoBehaviour
                                                      // camera = camera_,
                                                      // needDT = true,
                                                      // needPrevMatrix = false,
-                                                     // layer = 9 /* final */,
+                                                     layer = 9 /* final */,
                                                  });
 	}
 }

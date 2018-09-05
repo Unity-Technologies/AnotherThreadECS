@@ -195,7 +195,7 @@ public class ECSZakoManager : MonoBehaviour
                                            locktarget_list_[i].localPosition,
                                            locktarget_list_[i].localRotation,
                                            ref enemy.life_,
-                                           ref entity,
+                                           entity,
                                            ref random);
         }
     }

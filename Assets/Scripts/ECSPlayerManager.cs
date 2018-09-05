@@ -71,8 +71,7 @@ public class PlayerSystem : JobComponentSystem
         public readonly int Length;
         [ReadOnly] public EntityArray entity_list_;
         public ComponentDataArray<LockTarget> locktarget_list_;
-        [ReadOnly] public ComponentDataArray<Position> position_list_;
-        [ReadOnly] public ComponentDataArray<Rotation> rotation_list_;
+        [ReadOnly] public ComponentDataArray<LocalToWorld> local_to_world_list_;
         public ComponentDataArray<RandomLocal> random_list_;
     }
     [Inject] LockonGroup lockon_group_;
@@ -197,8 +196,7 @@ public class PlayerSystem : JobComponentSystem
         [ReadOnly] public float time_;
         [ReadOnly] public EntityArray locktarget_entity_list_;
         public ComponentDataArray<LockTarget> locktarget_list_;
-        [ReadOnly] public ComponentDataArray<Position> locktarget_position_list_;
-        [ReadOnly] public ComponentDataArray<Rotation> locktarget_rotation_list_;
+        [ReadOnly] public ComponentDataArray<LocalToWorld> locktarget_local_to_world_list_;
         public Position player_position_;
         public float3 player_normal_;
         public NativeLimitedCounter lockon_limit_;
@@ -210,15 +208,15 @@ public class PlayerSystem : JobComponentSystem
             LockTarget lt = locktarget_list_[i];
             if (!lt.isLocked(time_)) {
                 bool can_lock = false;
-                var diff = locktarget_position_list_[i].Value - player_position_.Value;
+                var locktarget_local_to_world = locktarget_local_to_world_list_[i].Value;
+                var diff = locktarget_local_to_world.c3.xyz - player_position_.Value;
                 float inner_product = math.dot(diff, player_normal_);
                 if (inner_product > 0f) {
                     float diffsqr = Vector3.Dot(diff, diff);
                     if (inner_product*inner_product >= diffsqr * cone_cos_sqr_) {
                         if (lt.has_direction_ != 0) {
-                            var rot = locktarget_rotation_list_[i];
-                            var fwd = new float3(0f, 0f, 1f);
-                            var vec = math.mul(rot.Value, fwd);
+                            var fwd = new float4(0f, 0f, 1f, 0f);
+                            var vec = math.mul(locktarget_local_to_world, fwd).xyz;
                             if (math.dot(diff, vec) < 0f) {
                                 can_lock = true;
                             }
@@ -229,8 +227,6 @@ public class PlayerSystem : JobComponentSystem
                 }
                 if (can_lock) {
                     if (lockon_limit_.TryIncrement(LASER_MAX /* inclusive_limit */)) {
-                        // Develop.print(lockon_limit_.Count);
-                        // Develop.print(time_);
                         lt.setLocked(time_);
                         locktarget_list_[i] = lt;
                         sight_spawner_.Enqueue(new SightSpawnData { target_entity_ = locktarget_entity_list_[i], });
@@ -327,8 +323,7 @@ public class PlayerSystem : JobComponentSystem
                     time_ = Time.GetCurrent(),
                     locktarget_entity_list_ = lockon_group_.entity_list_,
                     locktarget_list_ = lockon_group_.locktarget_list_,
-                    locktarget_position_list_ = lockon_group_.position_list_,
-                    locktarget_rotation_list_ = lockon_group_.rotation_list_,
+                    locktarget_local_to_world_list_ = lockon_group_.local_to_world_list_,
                     player_position_ = player_position,
                     player_normal_ = math.mul(player_rotation.Value, new float3(0f, 0f, 1f)),
                     lockon_limit_ = lockon_limit_,

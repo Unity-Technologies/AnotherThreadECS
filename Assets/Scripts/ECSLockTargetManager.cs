@@ -114,7 +114,7 @@ public static class LockTargetManager
                                       UnityEngine.Vector3 localPos,
                                       UnityEngine.Quaternion localRot,
                                       ref AtomicFloat life,
-                                      ref Entity parent_entity,
+                                      Entity parent_entity,
                                       ref RandomLocal random)
     {
         var entity = entity_manager.CreateEntity(archetype_);

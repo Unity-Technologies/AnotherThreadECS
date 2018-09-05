@@ -34,7 +34,6 @@
 			};
 
 			float _CurrentTime;
-			float _StartTimes[1023];
 
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
@@ -42,12 +41,16 @@
 			v2f vert(appdata v)
 			{
 				UNITY_SETUP_INSTANCE_ID(v);
-#if defined(UNITY_INSTANCING_ENABLED)
-				float elapsed = _CurrentTime - _StartTimes[unity_InstanceID];
-#else
-				float elapsed = 0.5;
-#endif
-				float4 pos = mul(unity_ObjectToWorld, float4(0, 0, 0, 1));
+// #if defined(UNITY_INSTANCING_ENABLED)
+// 				float elapsed = _CurrentTime - _StartTimes[unity_InstanceID];
+// #else
+// 				float elapsed = 0.5;
+// #endif
+                float start_time = unity_ObjectToWorld._m30;
+                float elapsed = _CurrentTime - start_time;
+                
+				// float4 pos = mul(unity_ObjectToWorld, float4(0, 0, 0, 1));
+				float4 pos = unity_ObjectToWorld._m03_m13_m23_m33;
 				float3 up = float3(0, 1, 0);
 				float3 eye = normalize(UnityWorldSpaceViewDir(pos).xyz);
 				float3 side = normalize(cross(eye, up));

@@ -73,7 +73,7 @@ public class ECSExplosionManager : MonoBehaviour
 		arche_type_ = entity_manager.CreateArchetype(typeof(Destroyable)
                                                      , typeof(Position)
 													 , typeof(Rotation)
-													 , typeof(LocalToWorld)
+													 , typeof(CustomLocalToWorld)
 													 , typeof(AlivePeriod)
 													 , typeof(StartTime)
 													 , typeof(MeshInstanceRenderer)

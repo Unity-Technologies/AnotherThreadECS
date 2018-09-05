@@ -417,6 +417,7 @@ public class ECSPlayerManager : MonoBehaviour
         player_archetype_ = entity_manager.CreateArchetype(typeof(Position)
                                                            , typeof(Rotation)
                                                            , typeof(LocalToWorld)
+                                                           , typeof(Destroyable)
                                                            , typeof(RigidbodyPosition)
                                                            , typeof(SphereCollider)
                                                            , typeof(PlayerCollisionInfo)
@@ -433,8 +434,6 @@ public class ECSPlayerManager : MonoBehaviour
                                                            , typeof(Cursor)
                                                            );
         burner_archetype_ = entity_manager.CreateArchetype(typeof(Position)
-                                                           // , typeof(Rotation)
-                                                           // , typeof(LocalToWorld)
                                                            , typeof(TrailData)
                                                            , typeof(TrailPoint)
                                                            , typeof(TrailRenderer)

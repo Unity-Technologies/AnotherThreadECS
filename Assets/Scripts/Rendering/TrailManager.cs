@@ -43,6 +43,7 @@ public class TrailSystem : JobComponentSystem
         public readonly int Length;
         [ReadOnly] public EntityArray entity_list_;
 		[ReadOnly] public ComponentDataArray<Position> position_list_;
+		[ReadOnly] public ComponentDataArray<LocalToWorld> local_to_world_list_;
         public ComponentDataArray<TrailData> trail_data_list_;
         public BufferArray<TrailPoint> trail_points_list_;
 	}
@@ -90,12 +91,14 @@ public class TrailSystem : JobComponentSystem
 	{
         public float flow_z_;
         [ReadOnly] public ComponentDataArray<Position> position_list_;
+        [ReadOnly] public ComponentDataArray<LocalToWorld> local_to_world_list_;
         public ComponentDataArray<TrailData> trail_data_list_;
         public BufferArray<TrailPoint> trail_points_list_;
 
 		public void Execute(int i)
 		{
-            var pos = position_list_[i];
+            // var pos = position_list_[i];
+            var pos = local_to_world_list_[i].Value.c3.xyz;
             var td = trail_data_list_[i];
             var trail_points = trail_points_list_[i];
 
@@ -113,8 +116,8 @@ public class TrailSystem : JobComponentSystem
             }
 
             var prev_pos = trail_points[prev_idx].position_;
-            var normal = math.normalize(pos.Value - prev_pos);
-            trail_points[index] = new TrailPoint { position_ = pos.Value, normal_ = normal, };
+            var normal = math.normalize(pos - prev_pos);
+            trail_points[index] = new TrailPoint { position_ = pos, normal_ = normal, };
 
             ++index;
             if (index >= TrailConfig.NODE_NUM) {
@@ -263,6 +266,7 @@ public class TrailSystem : JobComponentSystem
             var job = new Job() {
                 flow_z_ = CV.FLOW_VELOCITY * Time.GetDT(),
                 position_list_ = group_.position_list_,
+                local_to_world_list_ = group_.local_to_world_list_,
                 trail_data_list_ = group_.trail_data_list_,
                 trail_points_list_ = group_.trail_points_list_,
             };
@@ -386,7 +390,6 @@ public class TrailManager : MonoBehaviour
 
     [SerializeField] Material material_;
     Vector4[] color_shared_data_;
-    EntityArchetype archetype_;
 
     void initialize()
     {
@@ -399,16 +402,6 @@ public class TrailManager : MonoBehaviour
         color_shared_data_[(int)ColorType.Yellow] = new Vector4(1f, 1f, 0.2f, 1f);
         color_shared_data_[(int)ColorType.Cyan] = new Vector4(0.2f, 1f, 1f, 1f);
         color_shared_data_[(int)ColorType.White] = new Vector4(1f, 1f, 1f, 1f);
-
-        var entity_manager = Unity.Entities.World.Active.GetOrCreateManager<EntityManager>();
-        archetype_ = entity_manager.CreateArchetype(typeof(Destroyable)
-                                                    , typeof(Position)
-                                                    , typeof(LocalToWorld)
-                                                    , typeof(RigidbodyPosition)
-                                                    , typeof(TrailData)
-                                                    , typeof(TrailPoint)
-                                                    , typeof(TrailRenderer)
-                                                    );
         material_.SetVectorArray("_color_table", color_shared_data_);
     }
 
@@ -429,27 +422,6 @@ public class TrailManager : MonoBehaviour
     public Material getMaterial()
     {
         return material_;
-    }
-
-    public void spawn(ref float3 position, ColorType coltype)
-    {
-        var entity_manager = Unity.Entities.World.Active.GetOrCreateManager<Unity.Entities.EntityManager>();
-        var entity = entity_manager.CreateEntity(archetype_);
-        entity_manager.SetComponentData(entity, new Position { Value = position, });
-        entity_manager.SetComponentData(entity, new RigidbodyPosition(0f /* damper */));
-        var td = new TrailData();
-        td.color_type_ = (int)coltype;
-        entity_manager.SetComponentData(entity, td);
-        {
-            var buffer = entity_manager.GetBuffer<TrailPoint>(entity);
-            for (var i = 0; i < buffer.Capacity; ++i) {
-                buffer.Add(new TrailPoint { position_ = position, normal_ = new float3(0f, 0f, 1f), });
-            }
-        }
-		var renderer = new TrailRenderer {
-			material_ = material_,
-		};
-		entity_manager.SetSharedComponentData<TrailRenderer>(entity, renderer);
     }
 }
 

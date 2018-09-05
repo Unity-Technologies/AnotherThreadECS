@@ -12,8 +12,10 @@ using TestJobComponentSystem = TestInterface.JobComponentSystem;
 
 namespace UTJ {
 
+[System.Serializable]
 public struct TrailTestData : IComponentData
 {
+    public int dummy_;
 }
 
 public class TrailTestSystem : TestJobComponentSystem
@@ -21,7 +23,7 @@ public class TrailTestSystem : TestJobComponentSystem
 	struct Group
 	{
         public ComponentDataArray<Position> position_list_;
-		[ReadOnly] public ComponentDataArray<TrailData> trail_data_list_;
+        public ComponentDataArray<Rotation> rotation_list_;
         [ReadOnly] public ComponentDataArray<TrailTestData> trail_test_list_;
 	}
 	[Inject] Group group_;
@@ -33,11 +35,16 @@ public class TrailTestSystem : TestJobComponentSystem
         public Group group_;
         public void Execute(int i)
         {
-            var scale = 16f;
+            var scale = 1.6f;
             var pos = group_.position_list_[i];
+            var rot = group_.rotation_list_[i];
+
             pos.Value.x += math.cos(time_*(8f+(float)i/10f)) * scale;
             pos.Value.y += math.sin(time_*(7f+(float)i/10f)) * scale;
             pos.Value.z += math.sin(time_*(5f+(float)i/10f)) * scale;
+            rot.Value = quaternion.euler(time_*0.1f, time_*0.2f, time_*0.3f);
+
+            group_.rotation_list_[i] = rot;
             group_.position_list_[i] = pos;
         }
     }
@@ -64,10 +71,9 @@ public class TrailTest : MonoBehaviour {
         var entity_manager = Unity.Entities.World.Active.GetOrCreateManager<EntityManager>();
         archetype_ = entity_manager.CreateArchetype(typeof(Position)
                                                     , typeof(LocalToWorld)
-                                                    , typeof(RigidbodyPosition)
                                                     , typeof(TrailData)
+                                                    , typeof(TrailPoint)
                                                     , typeof(TrailRenderer)
-                                                    , typeof(TrailTestData)
                                                     );
     }
 
@@ -85,31 +91,46 @@ public class TrailTest : MonoBehaviour {
         Instance.finalize();
     }
 
-    void spawn(ref float3 position, int coltype)
+    void spawn(ref float3 position, TrailManager.ColorType coltype, Entity parent)
     {
         var entity_manager = Unity.Entities.World.Active.GetOrCreateManager<Unity.Entities.EntityManager>();
         var entity = entity_manager.CreateEntity(archetype_);
         entity_manager.SetComponentData(entity, new Position { Value = position, });
-        entity_manager.SetComponentData(entity, new RigidbodyPosition(0f /* damper */));
-        // var trail_buffer = TrailManager.Instance.getTrailBuffer();
         var td = new TrailData();
-        // td.trail_id_ = trail_buffer.allocate(ref position);
-        td.color_type_ = coltype;
+        td.color_type_ = (int)coltype;
         entity_manager.SetComponentData(entity, td);
-        var material = TrailManager.Instance.getMaterial();
+        {
+            var buffer = entity_manager.GetBuffer<TrailPoint>(entity);
+            for (var i = 0; i < buffer.Capacity; ++i) {
+                buffer.Add(new TrailPoint { position_ = position, normal_ = new float3(0f, 0f, 1f), });
+            }
+        }
 		var renderer = new TrailRenderer {
-			material_ = material,
-            // trail_buffer_ = trail_buffer,
+            material_ = TrailManager.Instance.getMaterial(),
 		};
 		entity_manager.SetSharedComponentData<TrailRenderer>(entity, renderer);
+
+        var attach = entity_manager.CreateEntity(typeof(Attach));
+        entity_manager.SetComponentData(attach, new Attach { Parent = parent, Child = entity, });
     }
 
     void Start()
     {
-        var pos = (Unity.Mathematics.float3)Vector3.zero;
-        for (var i = 0; i < 256; ++i) {
-            spawn(ref pos, UnityEngine.Random.Range(0, (int)TrailManager.ColorType.Max));
+        var entity_manager = Unity.Entities.World.Active.GetOrCreateManager<Unity.Entities.EntityManager>();
+        var entity = entity_manager.CreateEntity(typeof(TrailTestData)
+                                                 , typeof(Position)
+                                                 , typeof(Rotation)
+                                                 , typeof(Destroyable) // if not, it disappears immediately..
+                                                 );
+        entity_manager.SetComponentData(entity, new Rotation { Value = quaternion.identity, });
+        // Debug.Log(entity.Index);
+        // Debug.Log(entity.Version);
+        entity_manager.SetComponentData(entity, new TrailTestData { dummy_ = 999, });
+        for (var i = 0; i < 64; ++i) {
+            var pos = (float3)UnityEngine.Random.onUnitSphere*4f;
+            spawn(ref pos, TrailManager.ColorType.Red, entity);
         }
+        // Debug.Log(entity_manager.Debug.EntityCount);
     }
 }
 

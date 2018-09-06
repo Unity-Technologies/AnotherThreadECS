@@ -22,7 +22,8 @@ public class StartTimeSystem : JobComponentSystem
         [ReadOnly] public ComponentDataArray<Position> position_list_;
         [ReadOnly] public ComponentDataArray<Rotation> rotation_list_;
         [ReadOnly] public ComponentDataArray<StartTime> start_time_list_;
-        [WriteOnly] public ComponentDataArray<CustomLocalToWorld> custom_local_to_world_list_;
+        [ReadOnly] public ComponentDataArray<Frozen> frozen_list_;
+        [WriteOnly] public ComponentDataArray<LocalToWorld> local_to_world_list_;
     }
     [Inject] Group group_;
 
@@ -31,7 +32,7 @@ public class StartTimeSystem : JobComponentSystem
         [ReadOnly] public ComponentDataArray<Position> position_list_;
         [ReadOnly] public ComponentDataArray<Rotation> rotation_list_;
         [ReadOnly] public ComponentDataArray<StartTime> start_time_list_;
-        [WriteOnly] public ComponentDataArray<CustomLocalToWorld> custom_local_to_world_list_;
+        [WriteOnly] public ComponentDataArray<LocalToWorld> local_to_world_list_;
         
         public void Execute(int i)
         {
@@ -42,7 +43,7 @@ public class StartTimeSystem : JobComponentSystem
             var c0 = mat.c0;
             c0.w = start_time;
             mat.c0 = c0;
-            custom_local_to_world_list_[i] = new CustomLocalToWorld { Value = mat, };
+            local_to_world_list_[i] = new LocalToWorld { Value = mat, };
         }
     }
 
@@ -54,7 +55,7 @@ public class StartTimeSystem : JobComponentSystem
             position_list_ = group_.position_list_,
             rotation_list_ = group_.rotation_list_,
             start_time_list_ = group_.start_time_list_,
-            custom_local_to_world_list_ = group_.custom_local_to_world_list_,
+            local_to_world_list_ = group_.local_to_world_list_,
         };
         handle = job.Schedule(group_.Length, 16, handle);
 

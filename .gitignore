@@ -39,9 +39,9 @@ GRTAGS
 GTAGS
 builtin_shaders-2018.2.0f2
 iOS
-OSX.app
+*.app
 .DS_Store
-OSX_BackUpThisFolder_ButDontShipItWithYourGame
+*_BackUpThisFolder_ButDontShipItWithYourGame
 builtin_*
 com.*
 

@@ -60,7 +60,7 @@ public class SightSystem : JobComponentSystem
         [ReadOnly] public ComponentDataArray<StartTime> start_time_list_;
         [WriteOnly] public ComponentDataArray<Destroyable> destroyable_list_;
         public ComponentDataArray<Sight> sight_list_;
-        [WriteOnly] public ComponentDataArray<CustomLocalToWorld> matrix_list_;
+        [WriteOnly] public ComponentDataArray<LocalToWorld> matrix_list_;
     }
     [Inject] Group group_;
 
@@ -71,7 +71,7 @@ public class SightSystem : JobComponentSystem
         [ReadOnly] public ComponentDataArray<StartTime> start_time_list_;
         [WriteOnly] public ComponentDataArray<Destroyable> destroyable_list_;
         public ComponentDataArray<Sight> sight_list_;
-        [WriteOnly] public ComponentDataArray<CustomLocalToWorld> matrix_list_;
+        [WriteOnly] public ComponentDataArray<LocalToWorld> matrix_list_;
 
         public void Execute(int i)
         {
@@ -82,7 +82,7 @@ public class SightSystem : JobComponentSystem
             }
             var sp = screen_position_from_entity_[sight.target_entity_];
             var prev_sp = sight.initialized_ != 0 ? sight.prev_screen_position_ : sp.Value;
-            matrix_list_[i] = new CustomLocalToWorld {
+            matrix_list_[i] = new LocalToWorld {
                 Value = new float4x4(new float4(sp.Value, start_time_list_[i].value_),
                                      new float4(prev_sp, 1f),
                                      new float4(0f, 0f, 1f, 0f), // not in use
@@ -142,7 +142,8 @@ public class ECSSightManager : MonoBehaviour
                                                      , typeof(AlivePeriod)
                                                      , typeof(StartTime)
                                                      , typeof(Sight)
-                                                     , typeof(CustomLocalToWorld)
+                                                     , typeof(LocalToWorld)
+                                                     , typeof(Frozen)
                                                      , typeof(CustomMeshInstanceRenderer)
                                                      // , typeof(MeshInstanceRenderer)
                                                      );

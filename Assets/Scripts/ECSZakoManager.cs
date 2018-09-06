@@ -116,7 +116,6 @@ public class ECSZakoManager : MonoBehaviour
     [SerializeField] GameObject prefab_;
     Material material_;
     Mesh mesh_;
-    [SerializeField] UnityEngine.Camera camera_;
     Transform[] locktarget_list_;
     EntityArchetype archetype_;
     

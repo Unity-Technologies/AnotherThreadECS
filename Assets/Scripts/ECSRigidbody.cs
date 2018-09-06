@@ -140,7 +140,7 @@ public class RigidbodyPositionSystem : JobComponentSystem
 		var job = new RigidbodyPositionJob {
             dt_ = Time.GetDT(),
 		};
-		handle_ = job.Schedule(this, 8, handle_);
+		handle_ = job.Schedule(this, handle_);
 
 		return handle_;
 	}
@@ -186,7 +186,7 @@ public class RigidbodyRotationSystem : JobComponentSystem
 		var job = new RigidbodyRotationJob {
             dt_ = Time.GetDT(),
 		};
-		handle = job.Schedule(this, 8, handle);
+		handle = job.Schedule(this, handle);
 
         return handle;
 	}

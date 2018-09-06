@@ -71,7 +71,7 @@ public class ColliderUpdateSystem : JobComponentSystem
         var handle = inputDeps;
 
 		var job = new ColliderUpdateJob();
-        handle = job.Schedule(this, 32, handle);
+        handle = job.Schedule(this, handle);
 
 		return handle;
 	}

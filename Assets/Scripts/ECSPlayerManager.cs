@@ -394,7 +394,6 @@ public class ECSPlayerManager : MonoBehaviour
     [SerializeField] GameObject prefab_;
     Material material_;
     Mesh mesh_;
-    [SerializeField] UnityEngine.Camera camera_;
     EntityArchetype player_archetype_;
     EntityArchetype cursor_archetype_;
     EntityArchetype burner_archetype_;

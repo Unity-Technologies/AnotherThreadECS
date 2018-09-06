@@ -40,24 +40,30 @@ public struct Camera : IComponentData
     {
         var world_pos = world_mat.c3;
         var spos = math.mul(screen_matrix_, world_pos);
-        Assert.AreNotEqual(spos.w, 0f);
-        var wr = 1f/spos.w;
-        spos.x *= wr;
-        spos.y *= wr;
-        spos.z *= wr;
-        float3 pos = new float3(spos.x*(-SCREEN_WIDTH), spos.y*(-SCREEN_HEIGHT), -spos.z);
-        return pos;
+        if (spos.w == 0f) {
+            return new float3(0f, 0f, 0f);
+        } else {
+            var wr = 1f/spos.w;
+            spos.x *= wr;
+            spos.y *= wr;
+            spos.z *= wr;
+            float3 pos = new float3(spos.x*(-SCREEN_WIDTH), spos.y*(-SCREEN_HEIGHT), -spos.z);
+            return pos;
+        }
     }
     public float3 getSpritePosition(ref float3 world_pos)
     {
         var spos = math.mul(screen_matrix_, new float4(world_pos, 1f));
-        Assert.AreNotEqual(spos.w, 0f);
-        var wr = 1f/spos.w;
-        spos.x *= wr;
-        spos.y *= wr;
-        spos.z *= wr;
-        float3 pos = new float3(spos.x*(-SCREEN_WIDTH), spos.y*(-SCREEN_HEIGHT), -spos.z);
-        return pos;
+        if (spos.w == 0f) {
+            return new float3(0f, 0f, 0f);
+        } else {
+            var wr = 1f/spos.w;
+            spos.x *= wr;
+            spos.y *= wr;
+            spos.z *= wr;
+            float3 pos = new float3(spos.x*(-SCREEN_WIDTH), spos.y*(-SCREEN_HEIGHT), -spos.z);
+            return pos;
+        }
     }
 }
 

@@ -57,9 +57,10 @@ public class SightSystem : JobComponentSystem
     [Inject] [ReadOnly] public ComponentDataFromEntity<ScreenPosition> screen_position_from_entity_;
     struct Group {
         public readonly int Length;
+        [ReadOnly] public ComponentDataArray<StartTime> start_time_list_;
         [WriteOnly] public ComponentDataArray<Destroyable> destroyable_list_;
         public ComponentDataArray<Sight> sight_list_;
-        [WriteOnly] public ComponentDataArray<LocalToWorld> matrix_list_;
+        [WriteOnly] public ComponentDataArray<CustomLocalToWorld> matrix_list_;
     }
     [Inject] Group group_;
 
@@ -67,9 +68,10 @@ public class SightSystem : JobComponentSystem
     struct Job : IJobParallelFor
     {
         [ReadOnly] public ComponentDataFromEntity<ScreenPosition> screen_position_from_entity_;
+        [ReadOnly] public ComponentDataArray<StartTime> start_time_list_;
         [WriteOnly] public ComponentDataArray<Destroyable> destroyable_list_;
         public ComponentDataArray<Sight> sight_list_;
-        [WriteOnly] public ComponentDataArray<LocalToWorld> matrix_list_;
+        [WriteOnly] public ComponentDataArray<CustomLocalToWorld> matrix_list_;
 
         public void Execute(int i)
         {
@@ -80,10 +82,10 @@ public class SightSystem : JobComponentSystem
             }
             var sp = screen_position_from_entity_[sight.target_entity_];
             var prev_sp = sight.initialized_ != 0 ? sight.prev_screen_position_ : sp.Value;
-            matrix_list_[i] = new LocalToWorld {
-                Value = new float4x4(new float4(sp.Value, 1f),
+            matrix_list_[i] = new CustomLocalToWorld {
+                Value = new float4x4(new float4(sp.Value, start_time_list_[i].value_),
                                      new float4(prev_sp, 1f),
-                                     new float4(0f, 0f, 0f, 0f), // not in use
+                                     new float4(0f, 0f, 1f, 0f), // not in use
                                      new float4(0.1f, 1f, 0.5f, 1f)), // color
             };
             sight.prev_screen_position_ = sp.Value;
@@ -98,6 +100,7 @@ public class SightSystem : JobComponentSystem
         
         var job = new Job {
             screen_position_from_entity_ = screen_position_from_entity_,
+            start_time_list_ = group_.start_time_list_,
             destroyable_list_ = group_.destroyable_list_,
             sight_list_ = group_.sight_list_,
             matrix_list_ = group_.matrix_list_,
@@ -139,8 +142,9 @@ public class ECSSightManager : MonoBehaviour
                                                      , typeof(AlivePeriod)
                                                      , typeof(StartTime)
                                                      , typeof(Sight)
-                                                     , typeof(LocalToWorld)
+                                                     , typeof(CustomLocalToWorld)
                                                      , typeof(CustomMeshInstanceRenderer)
+                                                     // , typeof(MeshInstanceRenderer)
                                                      );
 		material_sight_ = new Material(material_.shader);
 		material_sight_.enableInstancing = true;
@@ -210,6 +214,7 @@ public class ECSSightManager : MonoBehaviour
 		entity_command_buffer.SetComponent(new StartTime { value_ = current_time, });
 		entity_command_buffer.SetComponent(new Sight { target_entity_ = target_entity, });
 		entity_command_buffer.SetSharedComponent(new CustomMeshInstanceRenderer {
+		// entity_command_buffer.SetSharedComponent(new MeshInstanceRenderer {
                                                      mesh = mesh_,
                                                      material = mat,
                                                      castShadows = UnityEngine.Rendering.ShadowCastingMode.Off,

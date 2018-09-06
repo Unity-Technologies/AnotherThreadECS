@@ -74,9 +74,9 @@ public class StartTimeRendererSystem : ComponentSystem
     protected override void OnCreateManager(int capacity)
     {
         m_Query = new EntityArchetypeQuery {
-            Any = System.Array.Empty<ComponentType>(),
+            Any = new ComponentType[] { typeof(MeshInstanceRenderer), typeof(CustomMeshInstanceRenderer), },
             None = System.Array.Empty<ComponentType>(),
-            All = new ComponentType[] { typeof(StartTime), typeof(MeshInstanceRenderer), },
+            All = new ComponentType[] { typeof(StartTime), },
         };
         m_PrevInvMatrix = UnityEngine.Matrix4x4.identity;
 
@@ -98,15 +98,25 @@ public class StartTimeRendererSystem : ComponentSystem
         EntityManager.AddMatchingArchetypes(m_Query, foundArchetypes);
         var chunks = EntityManager.CreateArchetypeChunkArray(foundArchetypes, Allocator.Temp);
         var meshInstanceRendererType = GetArchetypeChunkSharedComponentType<MeshInstanceRenderer>();
+        var customMeshInstanceRendererType = GetArchetypeChunkSharedComponentType<CustomMeshInstanceRenderer>();
         var matrix = m_PrevInvMatrix * m_Camera.cameraToWorldMatrix; // prev-view * inverted-cur-view
         for (var i = 0; i < chunks.Length; ++i) {
             var chunk = chunks[i];
             var rendererIndex = chunk.GetSharedComponentIndex(meshInstanceRendererType);
-            var renderer = EntityManager.GetSharedComponentData<MeshInstanceRenderer>(rendererIndex);
-            var material = renderer.material;
-            material.SetFloat(m_CurrentTimeID, Time.GetCurrent());
-            material.SetFloat(m_DTID, Time.GetDT());
-            material.SetMatrix(m_PrevInvMatrixID, matrix);
+            if (rendererIndex >= 0) {
+                var renderer = EntityManager.GetSharedComponentData<MeshInstanceRenderer>(rendererIndex);
+                var material = renderer.material;
+                material.SetFloat(m_CurrentTimeID, Time.GetCurrent());
+                material.SetFloat(m_DTID, Time.GetDT());
+                material.SetMatrix(m_PrevInvMatrixID, matrix);
+            } else {
+                rendererIndex = chunk.GetSharedComponentIndex(customMeshInstanceRendererType);
+                var renderer = EntityManager.GetSharedComponentData<CustomMeshInstanceRenderer>(rendererIndex);
+                var material = renderer.material;
+                material.SetFloat(m_CurrentTimeID, Time.GetCurrent());
+                material.SetFloat(m_DTID, Time.GetDT());
+                material.SetMatrix(m_PrevInvMatrixID, matrix);
+            }
         }
         m_PrevInvMatrix = m_Camera.worldToCameraMatrix;
         chunks.Dispose();

@@ -34,19 +34,21 @@
 #endif
  			};
  			
-			float4 _Color;
+			// float4 _Color;
 			float _CurrentTime;
-			float _StartTimes[1023];
+			// float _StartTimes[1023];
             float _DT;
 
             v2f vert(appdata v)
             {
 				UNITY_SETUP_INSTANCE_ID(v);
-#if defined(UNITY_INSTANCING_ENABLED)
-				float elapsed = _CurrentTime - _StartTimes[unity_InstanceID];
-#else
-				float elapsed = 1;
-#endif
+// #if defined(UNITY_INSTANCING_ENABLED)
+// 				float elapsed = _CurrentTime - _StartTimes[unity_InstanceID];
+// #else
+// 				float elapsed = 1;
+// #endif
+                float start_time = unity_ObjectToWorld._m30;
+                float elapsed = _CurrentTime - start_time;
                 float dt = max(_DT, 1.0/60);
 
                 float4x4 model_matrix = unity_ObjectToWorld;

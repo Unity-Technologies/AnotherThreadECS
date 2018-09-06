@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.496413, b: 0.5748175, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028374, g: 0.22571413, b: 0.3069228, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -141,7 +141,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   material_: {fileID: 2100000, guid: f6fb975e0a7cf47c79645fc9c743c833, type: 2}
-  camera_: {fileID: 1372580007}
 --- !u!4 &324276550
 Transform:
   m_ObjectHideFlags: 0
@@ -274,7 +273,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 780485390}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 168b0e3756704251859c57ee75912ca1, type: 3}
+  m_Script: {fileID: 11500000, guid: 0af0db853e732453799566a0e597993c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_SerializedData:
@@ -404,9 +403,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 879108638}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2327f3002fc94f2b91d287c740439550, type: 3}
+  m_Script: {fileID: 11500000, guid: 345a91954f2ba4779ae83b4fcf75bef6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_SerializedData:
+    Value:
+      value:
+        x: 0
+        y: 0
+        z: 0
+        w: 0
 --- !u!114 &879108645
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -415,7 +421,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 879108638}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 168b0e3756704251859c57ee75912ca1, type: 3}
+  m_Script: {fileID: 11500000, guid: 0af0db853e732453799566a0e597993c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_SerializedData:

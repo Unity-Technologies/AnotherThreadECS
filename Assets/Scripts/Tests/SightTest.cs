@@ -17,7 +17,7 @@ public struct SightTestDummy : IComponentData
 {
 }
 
-public class SightTestSystem : TestJobComponentSystem
+public class SightTestSystem : JobComponentSystem
 {
     struct Group {
         public readonly int Length;

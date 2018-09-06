@@ -129,6 +129,19 @@ namespace UTJ
             }
         }
         
+        [Inject] CustomMeshInstanceRendererSystem m_MeshRendererSystem;
+        // [Inject] LODGroupSystem m_LODSystem;
+        
+        public void OnBeforeCull(UnityEngine.Camera camera)
+        {
+            // m_LODSystem.ActiveCamera = camera;
+            // m_LODSystem.Update();
+            // m_LODSystem.ActiveCamera = null;
+            m_MeshRendererSystem.ActiveCamera = camera;
+            m_MeshRendererSystem.Update();
+            m_MeshRendererSystem.ActiveCamera = null;
+        }
+
         protected override void OnCreateManager(int capacity)
         {
             m_CustomLocalToWorldQuery = new EntityArchetypeQuery
@@ -143,6 +156,8 @@ namespace UTJ
                 None = Array.Empty<ComponentType>(),
                 All = new ComponentType[] {typeof(LocalToWorld), typeof(CustomMeshInstanceRenderer), typeof(VisibleLocalToWorld)}
             };
+            // RenderPipeline.beginCameraRendering += OnBeforeCull;
+            UnityEngine.Camera.onPreCull += OnBeforeCull;
         }
 
         protected override void OnDestroyManager()
@@ -494,6 +509,7 @@ namespace UTJ
             var batchCount = 0;
             var flippedWinding = false;
 
+            // Debug.Log(packedChunkCount);
             for (int i = 0; i < packedChunkCount; i++)
             {
                 var chunkIndex = packedChunkIndices[i];
@@ -513,6 +529,7 @@ namespace UTJ
                     {
                         Graphics.DrawMeshInstanced(renderer.mesh, renderer.subMesh, renderer.material, m_MatricesArray,
                             batchCount, null, renderer.castShadows, renderer.receiveShadows, renderer.layer, ActiveCamera);
+                        // Debug.Log(batchCount);
                     }
 
                     drawCount++;
@@ -533,6 +550,7 @@ namespace UTJ
                 {
                     Graphics.DrawMeshInstanced(renderer.mesh, renderer.subMesh, renderer.material, m_MatricesArray,
                         batchCount, null, renderer.castShadows, renderer.receiveShadows, renderer.layer, ActiveCamera);
+                    // Debug.Log(batchCount);
                 }
 
                 drawCount++;

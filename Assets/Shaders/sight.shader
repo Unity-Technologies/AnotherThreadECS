@@ -62,7 +62,7 @@
                 int xdir = (vid%0x2)*2-1;
                 
                 float size = 1500/2;
-                float min_size = 16;
+                float min_size = 8;
                 float time = 0.3;
                 float radius = max((time - elapsed)*size, min_size);
                 float prev_radius = max((time - (elapsed - dt*1))*size, min_size);

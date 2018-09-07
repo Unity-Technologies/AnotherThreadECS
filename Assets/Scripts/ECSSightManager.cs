@@ -220,9 +220,6 @@ public class ECSSightManager : MonoBehaviour
                                                      material = mat,
                                                      castShadows = UnityEngine.Rendering.ShadowCastingMode.Off,
                                                      receiveShadows = false,
-                                                     // camera = camera_,
-                                                     // needDT = true,
-                                                     // needPrevMatrix = false,
                                                      layer = 9 /* final */,
                                                  });
 	}

@@ -22,6 +22,7 @@ public struct TrailConfig {
 public struct TrailData : IComponentData {
     public int color_type_;
     public int trail_head_index_;
+    public float last_update_index_time_;
 }
 
 [InternalBufferCapacity(TrailConfig.NODE_NUM)]
@@ -42,7 +43,6 @@ public class TrailSystem : JobComponentSystem
 	{
         public readonly int Length;
         [ReadOnly] public EntityArray entity_list_;
-		[ReadOnly] public ComponentDataArray<Position> position_list_;
 		[ReadOnly] public ComponentDataArray<LocalToWorld> local_to_world_list_;
         public ComponentDataArray<TrailData> trail_data_list_;
         public BufferArray<TrailPoint> trail_points_list_;
@@ -89,24 +89,17 @@ public class TrailSystem : JobComponentSystem
     [BurstCompile]
 	struct Job : IJobParallelFor
 	{
+        public float current_time_;
         public float flow_z_;
-        [ReadOnly] public ComponentDataArray<Position> position_list_;
         [ReadOnly] public ComponentDataArray<LocalToWorld> local_to_world_list_;
         public ComponentDataArray<TrailData> trail_data_list_;
         public BufferArray<TrailPoint> trail_points_list_;
 
 		public void Execute(int i)
 		{
-            // var pos = position_list_[i];
             var pos = local_to_world_list_[i].Value.c3.xyz;
             var td = trail_data_list_[i];
             var trail_points = trail_points_list_[i];
-
-            var index = td.trail_head_index_;
-            var prev_idx = td.trail_head_index_ - 1;
-            if (prev_idx < 0) {
-                prev_idx = TrailConfig.NODE_NUM-1;
-            }
             
             // flow
             for (var j = 0; j < trail_points.Length; ++j) {
@@ -115,19 +108,28 @@ public class TrailSystem : JobComponentSystem
                 trail_points[j] = tp;
             }
 
+            var index = td.trail_head_index_;
+            if (current_time_ - td.last_update_index_time_ > 1f/60f) {
+                ++index;
+                if (index >= TrailConfig.NODE_NUM) {
+                    index = 0;
+                }
+                td.trail_head_index_ = index;
+                td.last_update_index_time_ = current_time_;
+                trail_data_list_[i] = td;
+            }
+
+            var prev_idx = td.trail_head_index_ - 1;
+            if (prev_idx < 0) {
+                prev_idx = TrailConfig.NODE_NUM-1;
+            }
             var prev_pos = trail_points[prev_idx].position_;
             var normal = math.normalize(pos - prev_pos);
             trail_points[index] = new TrailPoint { position_ = pos, normal_ = normal, };
-
-            ++index;
-            if (index >= TrailConfig.NODE_NUM) {
-                index = 0;
-            }
-            td.trail_head_index_ = index;
-            trail_data_list_[i] = td;
         }        
     }
 
+#if false
     struct PackJob : IJob
     {
         [ReadOnly] public ComponentDataArray<TrailData> trail_data_list_;
@@ -143,7 +145,7 @@ public class TrailSystem : JobComponentSystem
                 var td = trail_data_list_[i];
                 var trail_points = trail_points_list_[i];
                 for (var j = 0; j < TrailConfig.NODE_NUM; ++j) {
-                    int idx = td.trail_head_index_ - j - 1;
+                    int idx = td.trail_head_index_ - j;
                     if (idx < 0) {
                         idx += TrailConfig.NODE_NUM;
                     }
@@ -171,6 +173,7 @@ public class TrailSystem : JobComponentSystem
             }
         }
     }
+#endif
 
     struct PackVerticesJob : IJob
     {
@@ -183,7 +186,7 @@ public class TrailSystem : JobComponentSystem
                 var td = trail_data_list_[i];
                 var trail_points = trail_points_list_[i];
                 for (var j = 0; j < TrailConfig.NODE_NUM; ++j) {
-                    int idx = td.trail_head_index_ - j - 1;
+                    int idx = td.trail_head_index_ - j;
                     if (idx < 0) {
                         idx += TrailConfig.NODE_NUM;
                     }
@@ -206,7 +209,7 @@ public class TrailSystem : JobComponentSystem
                 var td = trail_data_list_[i];
                 var trail_points = trail_points_list_[i];
                 for (var j = 0; j < TrailConfig.NODE_NUM; ++j) {
-                    int idx = td.trail_head_index_ - j - 1;
+                    int idx = td.trail_head_index_ - j;
                     if (idx < 0) {
                         idx += TrailConfig.NODE_NUM;
                     }
@@ -264,13 +267,13 @@ public class TrailSystem : JobComponentSystem
 
         if (Time.GetDT() > 0f) {
             var job = new Job() {
+                current_time_ = Time.GetCurrent(),
                 flow_z_ = CV.FLOW_VELOCITY * Time.GetDT(),
-                position_list_ = group_.position_list_,
                 local_to_world_list_ = group_.local_to_world_list_,
                 trail_data_list_ = group_.trail_data_list_,
                 trail_points_list_ = group_.trail_points_list_,
             };
-            handle_ = job.Schedule(group_.position_list_.Length, 8, handle_);
+            handle_ = job.Schedule(group_.Length, 8, handle_);
         }
 
         {

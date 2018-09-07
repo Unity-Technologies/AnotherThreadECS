@@ -207,6 +207,8 @@ public class ECSBulletManager : MonoBehaviour
 															, typeof(SphereCollider)
 															, typeof(PlayerBulletCollisionInfo)
 															, typeof(AlivePeriod)
+                                                            , typeof(MeshRenderBounds)
+                                                            , typeof(WorldMeshRenderBounds)
 															, typeof(MeshInstanceRenderer)
 															);
 		arche_type_enemy_bullet_ = entity_manager.CreateArchetype(typeof(Destroyable)
@@ -217,6 +219,8 @@ public class ECSBulletManager : MonoBehaviour
 																  , typeof(SphereCollider)
                                                                   , typeof(EnemyBulletCollisionInfo)
 																  , typeof(AlivePeriod)
+                                                                  , typeof(MeshRenderBounds)
+                                                                  , typeof(WorldMeshRenderBounds)
 																  , typeof(MeshInstanceRenderer)
 																  );
 		material_bullet_ = new Material(material_.shader);
@@ -313,6 +317,7 @@ public class ECSBulletManager : MonoBehaviour
             });
 		entity_command_buffer.SetComponent(new SphereCollider { radius_ = 1f, });
 		entity_command_buffer.SetComponent(new AlivePeriod { start_time_ = time, period_ = 3f, });
+        entity_command_buffer.SetComponent(new MeshRenderBounds { Center = new float3(0f,0f,0f), Radius = 0.01f, });
 		entity_command_buffer.SetSharedComponent(new MeshInstanceRenderer {
                                                      mesh = mesh_,
                                                      material = mat,

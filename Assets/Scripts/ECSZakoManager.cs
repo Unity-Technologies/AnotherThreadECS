@@ -144,6 +144,7 @@ public class ECSZakoManager : MonoBehaviour
                                                     , typeof(Enemy)
                                                     , typeof(Zako)
                                                     , typeof(MeshRenderBounds)
+                                                    , typeof(WorldMeshRenderBounds)
                                                     , typeof(MeshInstanceRenderer)
                                                     );
 	}
@@ -181,7 +182,7 @@ public class ECSZakoManager : MonoBehaviour
         var enemy = Enemy.Create(ref float_resource);
         entity_manager.SetComponentData(entity, enemy);
         entity_manager.SetComponentData(entity, new Zako { target_position_ = new float3(random.range(-20f, 20f), random.range(-20f, 20f), 0f), });
-        entity_manager.SetComponentData(entity, new MeshRenderBounds { Center = new float3(0f,100f,0f), Radius = 0.1f, });
+        entity_manager.SetComponentData(entity, new MeshRenderBounds { Center = new float3(0f,0f,0f), Radius = 0.5f, });
 		var renderer = new MeshInstanceRenderer {
 			mesh = mesh_,
 			material = material_,

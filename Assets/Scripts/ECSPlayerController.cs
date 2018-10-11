@@ -44,9 +44,9 @@ public class PlayerControllerSystem : ComponentSystem
 	IEnumerator enumerator_;
     PlayerController auto_pc_;
 
-	protected override void OnCreateManager(int capacity)
+	protected override void OnCreateManager()
 	{
-        base.OnCreateManager(capacity);
+        base.OnCreateManager();
 		enumerator_ = act();
 	}
 

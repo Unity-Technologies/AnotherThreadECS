@@ -45,7 +45,7 @@ public struct SphereCollider  : IComponentData
     {
         if (updated_ == 0) return false;
         var diff = another.position_ - position_;
-        var dist2 = math.lengthSquared(diff);
+        var dist2 = math.lengthsq(diff);
         var rad = radius_ + another.radius_;
         var rad2 = rad * rad;
         return (dist2 < rad2);

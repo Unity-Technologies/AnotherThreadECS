@@ -98,8 +98,8 @@ public class ZakoSystem : JobComponentSystem
             dt_ = Time.GetDT(),
             player_pos_ = position_list_from_entity_[player_entity],
             group_ = group_,
-            bullet_spawner_ = ECSBulletManager.GetBulletSpawnDataQueue(),
-            explosion_spawner_ = ECSExplosionManager.GetExplosionSpawnDataQueue(),
+            bullet_spawner_ = ECSBulletManager.GetBulletSpawnDataQueue().ToConcurrent(),
+            explosion_spawner_ = ECSExplosionManager.GetExplosionSpawnDataQueue().ToConcurrent(),
 		};
         handle_ = job.Schedule(group_.zako_list_.Length, 8, handle_);
 

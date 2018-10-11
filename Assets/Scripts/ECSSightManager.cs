@@ -184,7 +184,7 @@ public class ECSSightManager : MonoBehaviour
         spawnSight(command_buffer, current_time, data.target_entity_);
     }
 
-	public static void spawnSight(EntityCommandBuffer.Concurrent entity_command_buffer,
+	public static void spawnSight(EntityCommandBuffer entity_command_buffer,
                                   float current_time,
                                   Entity target_entity)
 	{
@@ -194,7 +194,7 @@ public class ECSSightManager : MonoBehaviour
                                       target_entity);
 	}
 
-	public void spawn_sight_internal(EntityCommandBuffer.Concurrent entity_command_buffer,
+	public void spawn_sight_internal(EntityCommandBuffer entity_command_buffer,
                                      float current_time,
                                      Entity target_entity)
 	{
@@ -204,7 +204,7 @@ public class ECSSightManager : MonoBehaviour
                        material_sight_);
 	}
 
-	private void spawn_internal(EntityCommandBuffer.Concurrent entity_command_buffer,
+	private void spawn_internal(EntityCommandBuffer entity_command_buffer,
                                 float current_time,
                                 Entity target_entity,
 								Material mat)
@@ -215,7 +215,6 @@ public class ECSSightManager : MonoBehaviour
 		entity_command_buffer.SetComponent(new StartTime { value_ = current_time, });
 		entity_command_buffer.SetComponent(new Sight { target_entity_ = target_entity, });
 		entity_command_buffer.SetSharedComponent(new CustomMeshInstanceRenderer {
-		// entity_command_buffer.SetSharedComponent(new MeshInstanceRenderer {
                                                      mesh = mesh_,
                                                      material = mat,
                                                      castShadows = UnityEngine.Rendering.ShadowCastingMode.Off,

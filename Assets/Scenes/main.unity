@@ -291,7 +291,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   material_: {fileID: 2100000, guid: f6fb975e0a7cf47c79645fc9c743c833, type: 2}
-  camera_: {fileID: 690876096}
 --- !u!1 &347063557
 GameObject:
   m_ObjectHideFlags: 0
@@ -411,9 +410,9 @@ GameObject:
   - component: {fileID: 534669908}
   - component: {fileID: 534669910}
   - component: {fileID: 534669909}
+  - component: {fileID: 534669906}
   - component: {fileID: 534669911}
   - component: {fileID: 534669907}
-  - component: {fileID: 534669906}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: Untagged
@@ -509,9 +508,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 534669902}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df3daf294faf748d0bb3f601392101ea, type: 3}
+  m_Script: {fileID: 11500000, guid: 9b07cd3c4b8414f95aae47fcf0928994, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_SerializedData:
+    look_target_:
+      x: 0
+      y: 0
+      z: 0
 --- !u!114 &534669908
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -540,7 +544,7 @@ MonoBehaviour:
         x: 0
         y: 0
         z: 0
-        w: 0
+        w: 1
 --- !u!114 &534669910
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -565,9 +569,52 @@ MonoBehaviour:
   m_GameObject: {fileID: 534669902}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b07cd3c4b8414f95aae47fcf0928994, type: 3}
+  m_Script: {fileID: 11500000, guid: df3daf294faf748d0bb3f601392101ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_SerializedData:
+    projection_matrix_:
+      c0:
+        x: 0.97427857
+        y: 0
+        z: 0
+        w: 0
+      c1:
+        x: 0
+        y: 1.7320508
+        z: 0
+        w: 0
+      c2:
+        x: 0
+        y: 0
+        z: -1.0006001
+        w: -1
+      c3:
+        x: 0
+        y: 0
+        z: -0.60018003
+        w: 0
+    screen_matrix_:
+      c0:
+        x: 1
+        y: 0
+        z: 0
+        w: 0
+      c1:
+        x: 0
+        y: 1
+        z: 0
+        w: 0
+      c2:
+        x: 0
+        y: 0
+        z: 1
+        w: 0
+      c3:
+        x: 0
+        y: 0
+        z: 0
+        w: 1
 --- !u!1 &539218178 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100002, guid: adcd7238a66934d18b4af7c681d5e162,
@@ -1096,7 +1143,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   material_: {fileID: 2100000, guid: 0e403619f5d4247cf9e4cdcb3fb1a1a2, type: 2}
-  camera_: {fileID: 534669904}
 --- !u!4 &1125245703
 Transform:
   m_ObjectHideFlags: 0
@@ -1473,7 +1519,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefab_: {fileID: 1682237306653654, guid: 09530c0d79ed14298ba08edc62111de4, type: 2}
-  camera_: {fileID: 534669904}
 --- !u!4 &1564509630
 Transform:
   m_ObjectHideFlags: 0
@@ -1974,7 +2019,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefab_: {fileID: 1583457078046614, guid: 6a76c6105a05f4ae0897a4489934b5f7, type: 2}
-  camera_: {fileID: 534669904}
 --- !u!1 &2125906119
 GameObject:
   m_ObjectHideFlags: 0

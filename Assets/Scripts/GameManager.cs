@@ -40,9 +40,9 @@ public class GameManagerSystem : ComponentSystem
         // for (;;) yield return null;
 	}
 
-	protected override void OnCreateManager(int capacity)
+	protected override void OnCreateManager()
 	{
-        base.OnCreateManager(capacity);
+        base.OnCreateManager();
         random_ = RandomMaker.create();
 		enumerator_ = act();
 	}

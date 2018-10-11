@@ -96,7 +96,7 @@ public class BulletSystem : JobComponentSystem
                 destroy = true;
             } else {
                 float2 p_xy = pos.xy;
-                if (math.lengthSquared(p_xy) > CV.MAX_RADIUS_SQR) {
+                if (math.lengthsq(p_xy) > CV.MAX_RADIUS_SQR) {
                     destroy = true;
                 }
             }
@@ -128,7 +128,7 @@ public class BulletSystem : JobComponentSystem
                 destroy = true;
             } else {
                 float2 p_xy = pos.xy;
-                if (math.lengthSquared(p_xy) > CV.MAX_RADIUS_SQR) {
+                if (math.lengthsq(p_xy) > CV.MAX_RADIUS_SQR) {
                     destroy = true;
                 }
             }
@@ -152,7 +152,7 @@ public class BulletSystem : JobComponentSystem
                 position_list_ = player_bullet_group_.position_list_,
                 player_bullet_collision_info_list_ = player_bullet_group_.player_bullet_collision_info_list_,
                 destroyable_list_ = player_bullet_group_.destroyable_list_,
-                spark_spawner_ = ECSSparkManager.GetSparkSpawnDataQueue(),
+                spark_spawner_ = ECSSparkManager.GetSparkSpawnDataQueue().ToConcurrent(),
             };
             handle_ = job.Schedule(player_bullet_group_.position_list_.Length, 16, handle_);
         }
@@ -162,7 +162,7 @@ public class BulletSystem : JobComponentSystem
                 position_list_ = enemy_bullet_group_.position_list_,
                 enemy_bullet_collision_info_list_ = enemy_bullet_group_.enemy_bullet_collision_info_list_,
                 destroyable_list_ = enemy_bullet_group_.destroyable_list_,
-                spark_spawner_ = ECSSparkManager.GetSparkSpawnDataQueue(),
+                spark_spawner_ = ECSSparkManager.GetSparkSpawnDataQueue().ToConcurrent(),
             };
             handle_ = job.Schedule(enemy_bullet_group_.position_list_.Length, 16, handle_);
         }
@@ -254,7 +254,7 @@ public class ECSBulletManager : MonoBehaviour
         bullet_spawn_data_queue_.Dispose();
     }
 
-	public static void spawnBullet(EntityCommandBuffer.Concurrent entity_command_buffer,
+	public static void spawnBullet(EntityCommandBuffer entity_command_buffer,
                                    float time,
                                    ref float3 pos,
                                    ref float3 vel)
@@ -264,7 +264,7 @@ public class ECSBulletManager : MonoBehaviour
                                        ref pos,
                                        ref vel);
 	}
-	public static void spawnEnemyBullet(EntityCommandBuffer.Concurrent entity_command_buffer,
+	public static void spawnEnemyBullet(EntityCommandBuffer entity_command_buffer,
                                         float time,
                                         ref float3 pos,
                                         ref float3 vel)
@@ -275,7 +275,7 @@ public class ECSBulletManager : MonoBehaviour
                                              ref vel);
 	}
 
-	public void spawn_bullet_internal(EntityCommandBuffer.Concurrent entity_command_buffer,
+	public void spawn_bullet_internal(EntityCommandBuffer entity_command_buffer,
                                       float time,
                                       ref float3 pos,
                                       ref float3 vel)
@@ -287,7 +287,7 @@ public class ECSBulletManager : MonoBehaviour
                        material_bullet_,
                        arche_type_bullet_);
 	}
-	public void spawn_enemy_bullet_internal(EntityCommandBuffer.Concurrent entity_command_buffer,
+	public void spawn_enemy_bullet_internal(EntityCommandBuffer entity_command_buffer,
                                             float time,
                                             ref float3 pos,
                                             ref float3 vel)
@@ -300,16 +300,16 @@ public class ECSBulletManager : MonoBehaviour
                        arche_type_enemy_bullet_);
 	}
 
-	private void spawn_internal(EntityCommandBuffer.Concurrent entity_command_buffer,
+	private void spawn_internal(EntityCommandBuffer entity_command_buffer,
                                 float time,
 								ref float3 pos,
 								ref float3 vel,
 								Material mat,
 								EntityArchetype arche_type)
 	{
-		entity_command_buffer.CreateEntity(arche_type);
+        entity_command_buffer.CreateEntity(arche_type);
 		entity_command_buffer.SetComponent(new Position { Value = pos, });
-		entity_command_buffer.SetComponent(new Rotation { Value = quaternion.lookRotation(vel, new float3(0f, 1f, 0f)), });
+		entity_command_buffer.SetComponent(new Rotation { Value = quaternion.LookRotation(vel, new float3(0f, 1f, 0f)), });
 		entity_command_buffer.SetComponent(new RigidbodyPosition { velocity_ = vel, });
         entity_command_buffer.SetComponent(new SphereCollider {
                 offset_position_ = new float3(0f, 0f, 0f),

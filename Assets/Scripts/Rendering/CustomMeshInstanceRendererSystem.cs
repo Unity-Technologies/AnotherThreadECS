@@ -142,7 +142,7 @@ namespace UTJ
             m_MeshRendererSystem.ActiveCamera = null;
         }
 
-        protected override void OnCreateManager(int capacity)
+        protected override void OnCreateManager()
         {
             m_FrozenChunksQuery = new EntityArchetypeQuery
             {
@@ -709,7 +709,7 @@ namespace UTJ
             {
                 Chunks = chunks,
                 CustomMeshInstanceRendererType = customMeshInstanceRendererType,
-                ChunkRendererMap = chunkRendererMap
+                ChunkRendererMap = chunkRendererMap.ToConcurrent()
             };
             var mapChunkRenderersJobHandle = mapChunkRenderersJob.Schedule(chunks.Length, 64);
             
@@ -769,7 +769,7 @@ namespace UTJ
             {
                 Chunks = chunks,
                 CustomMeshInstanceRendererType = customMeshInstanceRendererType,
-                ChunkRendererMap = chunkRendererMap
+                ChunkRendererMap = chunkRendererMap.ToConcurrent()
             };
             var mapChunkRenderersJobHandle = mapChunkRenderersJob.Schedule(chunks.Length, 64);
             

@@ -47,9 +47,9 @@ public class SystemManagerSystem : ComponentSystem
 
     public static AtomicFloatResource FloatResource { get { Assert.IsTrue(float_resource_.IsCreated); return float_resource_; } }
 
-	protected override void OnCreateManager(int capacity)
+	protected override void OnCreateManager()
 	{
-        base.OnCreateManager(capacity);
+        base.OnCreateManager();
         Assert.IsFalse(float_resource_.IsCreated);
         float_resource_ = new AtomicFloatResource(1024, Allocator.Persistent);
         random_ = RandomMaker.create();

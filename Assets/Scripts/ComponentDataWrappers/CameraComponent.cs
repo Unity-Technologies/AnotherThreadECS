@@ -15,7 +15,7 @@ public class CameraComponent : ComponentDataWrapper<Camera>
         entity_manager.SetComponentData(entity, Camera.Create(ref projection_matrix));
     }
 
-    void OnEnable()
+    void Start()
     {
         var camera = GetComponent<UnityEngine.Camera>();
         setup(camera.projectionMatrix);

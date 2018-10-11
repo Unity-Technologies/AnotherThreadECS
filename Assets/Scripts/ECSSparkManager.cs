@@ -133,7 +133,7 @@ public class ECSSparkManager : MonoBehaviour
         }
     }
 
-	public static void spawnSpark(EntityCommandBuffer.Concurrent entity_command_buffer,
+	public static void spawnSpark(EntityCommandBuffer entity_command_buffer,
                                   float current_time,
                                   ref float3 pos)
 	{
@@ -142,7 +142,7 @@ public class ECSSparkManager : MonoBehaviour
                                       current_time,
                                       ref pos);
 	}
-	public static void spawnEnemySpark(EntityCommandBuffer.Concurrent entity_command_buffer,
+	public static void spawnEnemySpark(EntityCommandBuffer entity_command_buffer,
                                        float current_time,
                                        ref float3 pos)
 	{
@@ -152,7 +152,7 @@ public class ECSSparkManager : MonoBehaviour
                                             ref pos);
 	}
 
-	public void spawn_spark_internal(EntityCommandBuffer.Concurrent entity_command_buffer,
+	public void spawn_spark_internal(EntityCommandBuffer entity_command_buffer,
                                      float current_time,
                                      ref float3 pos)
 	{
@@ -161,7 +161,7 @@ public class ECSSparkManager : MonoBehaviour
                        ref pos,
                        material_spark_);
 	}
-	public void spawn_enemy_spark_internal(EntityCommandBuffer.Concurrent entity_command_buffer,
+	public void spawn_enemy_spark_internal(EntityCommandBuffer entity_command_buffer,
                                            float current_time,
                                            ref float3 pos)
 	{
@@ -171,7 +171,7 @@ public class ECSSparkManager : MonoBehaviour
                        material_enemy_spark_);
 	}
 
-	private void spawn_internal(EntityCommandBuffer.Concurrent entity_command_buffer,
+	private void spawn_internal(EntityCommandBuffer entity_command_buffer,
                                 float current_time,
 								ref float3 pos,
 								Material mat)

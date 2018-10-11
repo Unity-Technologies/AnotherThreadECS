@@ -46,7 +46,7 @@ public class DestroyableSsytem : JobComponentSystem
         {
             Destroyable d = destroyable_list_[i];
             if (d.killed_ != 0) {
-                command_buffer_.DestroyEntity(entity_list_[i]);
+                command_buffer_.DestroyEntity(i /* job_index */, entity_list_[i]);
             }
         }
     }
@@ -64,7 +64,7 @@ public class DestroyableSsytem : JobComponentSystem
             Parent parent = parent_list_[i];
             if (!destroyable_list_from_entity_.Exists(parent.Value) ||
                 destroyable_list_from_entity_[parent.Value].killed_ != 0) {
-                command_buffer_.DestroyEntity(entity_list_[i]);
+                command_buffer_.DestroyEntity(i /* job_index */, entity_list_[i]);
             }
         }
     }
@@ -74,14 +74,14 @@ public class DestroyableSsytem : JobComponentSystem
         var handle = inputDep;
 
         var job = new Job {
-            command_buffer_ = barrier_.CreateCommandBuffer(),
+            command_buffer_ = barrier_.CreateCommandBuffer().ToConcurrent(),
             entity_list_ = group_.entity_list_,
             destroyable_list_ = group_.destroyable_list_,
         };
         handle = job.Schedule(group_.Length, 32, handle);
 
         var cjob = new CleanJob {
-            command_buffer_ = barrier_.CreateCommandBuffer(),
+            command_buffer_ = barrier_.CreateCommandBuffer().ToConcurrent(),
             destroyable_list_from_entity_ = destroyable_list_from_entity_,
             entity_list_ = child_group_.entity_list_,
             parent_list_ = child_group_.parent_list_,

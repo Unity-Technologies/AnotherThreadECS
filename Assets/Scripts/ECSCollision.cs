@@ -61,9 +61,9 @@ public class CollisionSystem : JobComponentSystem
     NativeMultiHashMap<int, int> player_bullet_hashmap_;
     NativeMultiHashMap<int, int> enemy_bullet_hashmap_;
 
-    protected override void OnCreateManager(int capacity)
+    protected override void OnCreateManager()
     {
-        base.OnCreateManager(capacity);
+        base.OnCreateManager();
         offsets_ = new NativeArray<float3>(27-1, Allocator.Persistent);
         offsets_[ 0] = new float3( 1f,  1f,  1f);
         offsets_[ 1] = new float3( 1f,  1f,  0f);
@@ -306,7 +306,7 @@ public class CollisionSystem : JobComponentSystem
             cell_radius_ = CELL_RADIUS,
             offsets_ = offsets_,
             sphere_collider_list_ = player_group_.sphere_collider_list_,
-            hashmap_ = player_hashmap_,
+            hashmap_ = player_hashmap_.ToConcurrent(),
         };
         var initial_player_hashmap_handle_ = initial_player_hashmap_job.Schedule(player_group_.Length, 32, handle_);
 
@@ -314,7 +314,7 @@ public class CollisionSystem : JobComponentSystem
             cell_radius_ = CELL_RADIUS,
             offsets_ = offsets_,
             sphere_collider_list_ = enemy_group_.sphere_collider_list_,
-            hashmap_ = enemy_hashmap_,
+            hashmap_ = enemy_hashmap_.ToConcurrent(),
         };
         var initial_enemy_hashmap_handle_ = initial_enemy_hashmap_job.Schedule(enemy_group_.Length, 32, handle_);
 
@@ -322,7 +322,7 @@ public class CollisionSystem : JobComponentSystem
             cell_radius_ = CELL_RADIUS,
             offsets_ = offsets_,
             sphere_collider_list_ = player_bullet_group_.sphere_collider_list_,
-            hashmap_ = player_bullet_hashmap_,
+            hashmap_ = player_bullet_hashmap_.ToConcurrent(),
         };
         var initial_player_bullet_hashmap_handle_ = initial_player_bullet_hashmap_job.Schedule(player_bullet_group_.Length,
                                                                                                32, handle_);
@@ -330,7 +330,7 @@ public class CollisionSystem : JobComponentSystem
             cell_radius_ = CELL_RADIUS,
             offsets_ = offsets_,
             sphere_collider_list_ = enemy_bullet_group_.sphere_collider_list_,
-            hashmap_ = enemy_bullet_hashmap_,
+            hashmap_ = enemy_bullet_hashmap_.ToConcurrent(),
         };
         var initial_enemy_bullet_hashmap_handle_ = initial_enemy_bullet_hashmap_job.Schedule(enemy_bullet_group_.Length,
                                                                                              32, handle_);

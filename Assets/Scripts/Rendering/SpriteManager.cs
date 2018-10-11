@@ -215,9 +215,9 @@ public class SpriteRendererSystem : ComponentSystem
     static List<JobHandle> need_to_be_syncronized_handle_list_ = new List<JobHandle>();
     public static void DependOn(JobHandle handle) { need_to_be_syncronized_handle_list_.Add(handle); }
 
-    protected override void OnCreateManager(int capacity)
+    protected override void OnCreateManager()
     {
-        base.OnCreateManager(capacity);
+        base.OnCreateManager();
         SpriteRenderer.initialize();
     }
     

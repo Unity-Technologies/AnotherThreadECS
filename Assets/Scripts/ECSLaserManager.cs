@@ -112,7 +112,7 @@ public class LaserSystem : JobComponentSystem
             local_to_world_list_from_entity_ = local_to_world_list_from_entity_,
             trail_data_list_ = group_.trail_data_list_,
             destroyable_list_ = group_.destroyable_list_,
-            explosion_spawner_ = ECSExplosionManager.GetExplosionSpawnDataQueue(),
+            explosion_spawner_ = ECSExplosionManager.GetExplosionSpawnDataQueue().ToConcurrent(),
         };
         handle_ = job.Schedule(group_.rb_position_list_.Length, 8, handle_);
 
@@ -162,7 +162,8 @@ public class ECSLaserManager : MonoBehaviour
                              ref RandomLocal random,
                              int index,
                              Entity target,
-                             float arrive_period)
+                             float arrive_period,
+                             int job_index)
     {
         Instance.spawn_internal(command_buffer,
                                 ref lt,
@@ -171,7 +172,8 @@ public class ECSLaserManager : MonoBehaviour
                                 ref random,
                                 index,
                                 target,
-                                arrive_period);
+                                arrive_period,
+                                job_index);
     }
 
     public void spawn_internal(EntityCommandBuffer.Concurrent command_buffer,
@@ -181,11 +183,12 @@ public class ECSLaserManager : MonoBehaviour
                                ref RandomLocal random,
                                int index,
                                Entity target,
-                               float arrive_period)
+                               float arrive_period,
+                               int job_index)
     {
-        command_buffer.CreateEntity(archetype_);
-        command_buffer.SetComponent(new Position { Value = position, });
-        command_buffer.SetComponent(new LaserData {
+        command_buffer.CreateEntity(job_index, archetype_);
+        command_buffer.SetComponent(job_index, new Position { Value = position, });
+        command_buffer.SetComponent(job_index, new LaserData {
                 end_time_ = CV.MaxValue,
                 target_entity_ = target,
                 arrive_period_ = arrive_period,
@@ -197,14 +200,14 @@ public class ECSLaserManager : MonoBehaviour
                                        random.range(-FIRE_VEL, FIRE_VEL),
                                        random.range(-FIRE_VEL, FIRE_VEL));
         rb.velocity_ = math.mul(rotation, fire_velocity);
-        command_buffer.SetComponent(rb);
+        command_buffer.SetComponent(job_index, rb);
         var td = new TrailData {
             color_type_ = (int)TrailManager.ColorType.Green,
         };
-        command_buffer.SetComponent(td);
+        command_buffer.SetComponent(job_index, td);
 
         {
-            var buffer = command_buffer.SetBuffer<TrailPoint>();
+            var buffer = command_buffer.SetBuffer<TrailPoint>(job_index);
             for (var i = 0; i < buffer.Capacity; ++i) {
                 buffer.Add(new TrailPoint { position_ = position, normal_ = new float3(0f, 0f, 1f), });
             }
@@ -214,7 +217,7 @@ public class ECSLaserManager : MonoBehaviour
 		var renderer = new TrailRenderer {
 			material_ = material,
 		};
-		command_buffer.SetSharedComponent<TrailRenderer>(renderer);
+		command_buffer.SetSharedComponent<TrailRenderer>(job_index, renderer);
     }
 }
 

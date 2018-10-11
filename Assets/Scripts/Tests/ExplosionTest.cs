@@ -8,7 +8,8 @@ using Unity.Mathematics;
 // using UnityEngine.Assertions;
 using Unity.Jobs;
 // using Unity.Burst;
-using TestJobComponentSystem = TestInterface.JobComponentSystem;
+using TestComponentSystem = TestInterface.ComponentSystem;
+// using TestComponentSystem = Unity.Entities.ComponentSystem;
 
 namespace UTJ {
 
@@ -16,7 +17,7 @@ public struct ExplosionTestDummy : IComponentData
 {
 }
 
-public class ExplosionTestSystem : TestJobComponentSystem
+public class ExplosionTestSystem : TestComponentSystem
 {
     struct Group {
 #pragma warning disable 0169
@@ -26,43 +27,21 @@ public class ExplosionTestSystem : TestJobComponentSystem
     }
     [Inject] Group group_;
 
-    class Barrier : BarrierSystem {}
-    [Inject] Barrier barrier_;
-
-    // [BurstCompile]
-    struct Job : IJobParallelFor
+	protected override void OnUpdate()
     {
-        public float time_;
-        public EntityCommandBuffer.Concurrent command_buffer_;
-        public ComponentDataArray<RandomLocal> random_list_;
-        
-        public void Execute(int i)
-        {
+        for (var i = 0; i < group_.random_list_.Length; ++i) {
             const float RANGE = 10f;
-            var random = random_list_[i];
+            var time = Time.GetCurrent();
+            var random = group_.random_list_[i];
             var pos = new float3(random.range(-RANGE, RANGE),
                                  random.range(-RANGE, RANGE),
                                  random.range(-RANGE, RANGE));
-            ECSExplosionManager.spawn(command_buffer_,
-                                      time_,
+            ECSExplosionManager.spawn(PostUpdateCommands,
+                                      time,
                                       ref pos,
                                       random.range(-Mathf.PI, Mathf.PI));
-            random_list_[i] = random;
+            group_.random_list_[i] = random;
         }
-    }
-
-	protected override JobHandle OnUpdate(JobHandle inputDeps)
-    {
-        var handle = inputDeps;
-
-        var job = new Job {
-            time_ = Time.GetCurrent(),
-            command_buffer_ = barrier_.CreateCommandBuffer(),
-            random_list_ = group_.random_list_,
-        };
-        handle = job.Schedule(group_.random_list_.Length, 8, handle);
-
-        return handle;
     }    
 }
 

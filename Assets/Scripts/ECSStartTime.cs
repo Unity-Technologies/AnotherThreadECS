@@ -72,7 +72,7 @@ public class StartTimeRendererSystem : ComponentSystem
     int m_DTID;
     int m_PrevInvMatrixID;
 
-    protected override void OnCreateManager(int capacity)
+    protected override void OnCreateManager()
     {
         m_Query = new EntityArchetypeQuery {
             Any = new ComponentType[] { typeof(MeshInstanceRenderer), typeof(CustomMeshInstanceRenderer), },

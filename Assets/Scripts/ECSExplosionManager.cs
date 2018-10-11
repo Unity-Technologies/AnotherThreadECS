@@ -104,7 +104,7 @@ public class ECSExplosionManager : MonoBehaviour
         explosion_spawn_data_queue_.Dispose();
     }
 
-	public static void spawn(EntityCommandBuffer.Concurrent entity_command_buffer,
+	public static void spawn(EntityCommandBuffer entity_command_buffer,
                              float current_time,
                              ref float3 position,
                              float rotation1)
@@ -112,14 +112,14 @@ public class ECSExplosionManager : MonoBehaviour
 		Instance.spawn_internal(entity_command_buffer, current_time, ref position, rotation1);
 	}
 
-	private void spawn_internal(EntityCommandBuffer.Concurrent entity_command_buffer,
+	private void spawn_internal(EntityCommandBuffer entity_command_buffer,
                                 float current_time,
                                 ref float3 position,
                                 float rotation1)
 	{
 		entity_command_buffer.CreateEntity(arche_type_);
 		entity_command_buffer.SetComponent(new Position { Value = position, });
-		entity_command_buffer.SetComponent(new Rotation { Value = quaternion.axisAngle(new float3(0f, 0f, 1f), rotation1), });
+		entity_command_buffer.SetComponent(new Rotation { Value = quaternion.AxisAngle(new float3(0f, 0f, 1f), rotation1), });
 		entity_command_buffer.SetComponent(new AlivePeriod {
                 start_time_ = current_time,
                 period_ = 0.8f,

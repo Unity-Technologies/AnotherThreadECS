@@ -162,7 +162,7 @@ public class PlayerSystem : JobComponentSystem
             }
             {
                 var diff = cursor_pos.Value - player_pos.Value;
-                quaternion rot = math.mul(quaternion.lookRotation(diff, new float3(0f, 1f, 0f)), quaternion.euler(0f, 0f, math.radians(pitch)));
+                quaternion rot = math.mul(quaternion.LookRotation(diff, new float3(0f, 1f, 0f)), quaternion.EulerZXY(0f, 0f, math.radians(pitch)));
                 rotation_list_[i] = new Rotation{ Value = rot, };
             }
             {
@@ -254,7 +254,8 @@ public class PlayerSystem : JobComponentSystem
                    ref RandomLocal random,
                    int i,
                    Entity entity,
-                   float arrive_period)
+                   float arrive_period,
+                   int job_index)
         {
             ECSLaserManager.spawn(command_buffer_,
                                   ref lt,
@@ -263,7 +264,8 @@ public class PlayerSystem : JobComponentSystem
                                   ref random,
                                   i,
                                   entity,
-                                  arrive_period);
+                                  arrive_period,
+                                  job_index);
         }
 
         public void Execute(int i)
@@ -281,10 +283,36 @@ public class PlayerSystem : JobComponentSystem
                       ref rot,
                       ref random,
                       i, entity_list_[i],
-                      eta);
+                      eta,
+                      i /* job_index */);
                 random_list_[i] = random;
             }
             locktarget_list_[i] = lt;
+        }
+    }
+
+	struct FireBulletJob : IJob
+	{
+        [WriteOnly] public NativeQueue<BulletSpawnData>.Concurrent bullet_spawner_;
+        public float current_time_;
+        public Position player_position_;
+        public Rotation player_rotation_;
+
+        public void Execute()
+        {
+            var vel = math.mul(player_rotation_.Value, new float3(0f, 0f, 48f));
+            var pos0 = math.mul(player_rotation_.Value, new float3(0.3f, 0.1f, 0.8f)) + player_position_.Value;
+            bullet_spawner_.Enqueue(new BulletSpawnData {
+                    position_ = pos0,
+                    velocity_ = vel,
+                    type_ = 0, // 0: Player
+                });
+            var pos1 = math.mul(player_rotation_.Value, new float3(-0.3f, 0.1f, 0.8f)) + player_position_.Value;
+            bullet_spawner_.Enqueue(new BulletSpawnData {
+                    position_ = pos1,
+                    velocity_ = vel,
+                    type_ = 0, // 0: Player
+                });
         }
     }
 
@@ -327,7 +355,7 @@ public class PlayerSystem : JobComponentSystem
                     player_position_ = player_position,
                     player_normal_ = math.mul(player_rotation.Value, new float3(0f, 0f, 1f)),
                     lockon_limit_ = lockon_limit_,
-                    sight_spawner_ = ECSSightManager.GetSightSpawnDataQueue(),
+                    sight_spawner_ = ECSSightManager.GetSightSpawnDataQueue().ToConcurrent(),
                 };
                 handle_ = lockon_job.Schedule(lockon_group_.Length, 8, handle_);
             }
@@ -335,7 +363,7 @@ public class PlayerSystem : JobComponentSystem
             if (pc.fire_laser_ != 0) {
                 var fire_laser_job = new FireLaserJob {
                     time_ = Time.GetCurrent(),
-                    command_buffer_ = barrier_.CreateCommandBuffer(),
+                    command_buffer_ = barrier_.CreateCommandBuffer().ToConcurrent(),
                     entity_list_ = lockon_group_.entity_list_,
                     player_position_ = player_position,
                     player_rotation_ = player_rotation,
@@ -352,17 +380,13 @@ public class PlayerSystem : JobComponentSystem
             }
             const int RENSYA_NUM = 16;
             if (Time.GetCurrent() - player.fire_bullet_time_ >= 0f && player.fire_bullet_count_ < RENSYA_NUM) {
-                var vel = math.mul(player_rotation.Value, new float3(0f, 0f, 48f));
-                var pos0 = math.mul(player_rotation.Value, new float3(0.3f, 0.1f, 0.8f)) + player_position.Value;
-                ECSBulletManager.spawnBullet(barrier_.CreateCommandBuffer(),
-                                             Time.GetCurrent(),
-                                             ref pos0,
-                                             ref vel);
-                var pos1 = math.mul(player_rotation.Value, new float3(-0.3f, 0.1f, 0.8f)) + player_position.Value;
-                ECSBulletManager.spawnBullet(barrier_.CreateCommandBuffer(),
-                                             Time.GetCurrent(),
-                                             ref pos1,
-                                             ref vel);
+                var fire_bullet_job = new FireBulletJob {
+                    bullet_spawner_ = ECSBulletManager.GetBulletSpawnDataQueue().ToConcurrent(),
+                    current_time_ = Time.GetCurrent(),
+                    player_position_ = player_position,
+                    player_rotation_ = player_rotation,
+                };
+                handle_ = fire_bullet_job.Schedule(handle_);
                 const float INTERVAL = 0.05f;
                 player.fire_bullet_time_ = Time.GetCurrent() + INTERVAL;
                 ++player.fire_bullet_count_;

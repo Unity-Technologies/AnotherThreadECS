@@ -75,7 +75,7 @@ public struct RigidbodyRotation : IComponentData
     {
         var diff = target - position.Value;
         var up = new float3(0f, 1f, 0f);
-        var q = quaternion.lookRotation(diff, up);
+        var q = quaternion.LookRotation(diff, up);
         addSpringTorque(ref q, ref rotation, level);
     }
     public void addSpringTorque(ref quaternion target,
@@ -124,7 +124,7 @@ public class RigidbodyPositionSystem : JobComponentSystem
 			rb.acceleration_ = new float3(0f, 0f, 0f);
 
             var radius = rb.limit_xy_tube_radius_;
-            if (radius > 0f && math.lengthSquared(position.Value.xy) >= radius*radius) {
+            if (radius > 0f && math.lengthsq(position.Value.xy) >= radius*radius) {
                 rb.hit_tube_ = 1;
                 rb.cancelUpdateForTube(dt_, ref position.Value, radius);
             } else {

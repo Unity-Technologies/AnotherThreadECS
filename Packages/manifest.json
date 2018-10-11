@@ -1,11 +1,11 @@
 {
   "dependencies": {
-    "com.unity.burst": "0.2.4-preview.25",
-    "com.unity.collections": "0.0.9-preview.4",
-    "com.unity.entities": "0.0.12-preview.12",
-    "com.unity.incrementalcompiler": "0.0.42-preview.19",
-    "com.unity.jobs": "0.0.7-preview.3",
-    "com.unity.mathematics": "0.0.12-preview.13",
+    "com.unity.burst": "0.2.4-preview.30",
+    "com.unity.collections": "0.0.9-preview.6",
+    "com.unity.entities": "0.0.12-preview.15",
+    "com.unity.incrementalcompiler": "0.0.42-preview.21",
+    "com.unity.jobs": "0.0.7-preview.4",
+    "com.unity.mathematics": "0.0.12-preview.17",
     "com.unity.package-manager-ui": "2.0.0-preview.3",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.animation": "1.0.0",

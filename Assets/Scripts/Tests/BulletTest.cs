@@ -8,8 +8,8 @@ using Unity.Mathematics;
 // using UnityEngine.Assertions;
 using Unity.Jobs;
 // using Unity.Burst;
-using TestJobComponentSystem = TestInterface.JobComponentSystem;
-// using TestJobComponentSystem = Unity.Entities.JobComponentSystem;
+using TestComponentSystem = TestInterface.ComponentSystem;
+// using TestComponentSystem = Unity.Entities.ComponentSystem;
 
 namespace UTJ {
 
@@ -17,7 +17,7 @@ public struct BulletTestDummy : IComponentData
 {
 }
 
-public class BulletTestSystem : TestJobComponentSystem
+public class BulletTestSystem : TestComponentSystem
 {
     struct Group {
 #pragma warning disable 0169
@@ -27,46 +27,24 @@ public class BulletTestSystem : TestJobComponentSystem
     }
     [Inject] Group group_;
 
-    class Barrier : BarrierSystem {}
-    [Inject] Barrier barrier_;
-
-    // [BurstCompile]
-    struct Job : IJobParallelFor
+	protected override void OnUpdate()
     {
-        public float time_;
-        public EntityCommandBuffer.Concurrent command_buffer_;
-        public ComponentDataArray<RandomLocal> random_list_;
-        
-        public void Execute(int i)
-        {
-            var random = random_list_[i];
+        var time = Time.GetCurrent();
+        for (var i = 0; i < group_.random_list_.Length; ++i) {
+            var random = group_.random_list_[i];
             var pos = new float3(0f, 0f, 0f);
             var vel = random.onSphere(10f);
-            ECSBulletManager.spawnBullet(command_buffer_,
-                                         time_,
+            ECSBulletManager.spawnBullet(PostUpdateCommands,
+                                         time,
                                          ref pos,
                                          ref vel);
             vel = random.onSphere(10f);
-            ECSBulletManager.spawnEnemyBullet(command_buffer_,
-                                              time_,
+            ECSBulletManager.spawnEnemyBullet(PostUpdateCommands,
+                                              time,
                                               ref pos,
                                               ref vel);
-            random_list_[i] = random;
+            group_.random_list_[i] = random;
         }
-    }
-
-	protected override JobHandle OnUpdate(JobHandle inputDeps)
-    {
-        var handle = inputDeps;
-
-        var job = new Job {
-            time_ = Time.GetCurrent(),
-            command_buffer_ = barrier_.CreateCommandBuffer(),
-            random_list_ = group_.random_list_,
-        };
-        handle = job.Schedule(group_.random_list_.Length, 8, handle);
-
-        return handle;
     }    
 }
 

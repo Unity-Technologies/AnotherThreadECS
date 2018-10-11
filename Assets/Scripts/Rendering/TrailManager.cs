@@ -70,7 +70,7 @@ public class TrailSystem : JobComponentSystem
     public static JobHandle Fence { get { return handle_; } }
     public static void Sync() { handle_.Complete(); }
 
-    protected override void OnCreateManager(int capacity /* vestigial */)
+    protected override void OnCreateManager()
     {
         managed_vertices_list_ = new List<Vector3>(TrailConfig.TOTAL_NUM*2);
         managed_normals_list_ = new List<Vector3>(TrailConfig.TOTAL_NUM*2);
@@ -278,7 +278,6 @@ public class TrailSystem : JobComponentSystem
 
         {
             var handle_s = new NativeArray<JobHandle>(8, Allocator.Temp);
-            var idx = 0;
             var v_job = new PackVerticesJob {
                 trail_data_list_ = group_.trail_data_list_,
                 trail_points_list_ = group_.trail_points_list_,
@@ -293,7 +292,8 @@ public class TrailSystem : JobComponentSystem
             var t_job = new PackTrianglesJob {
                 length = group_.Length,
             };
-#if true
+#if false
+            var idx = 0;
             handle_s[idx] = v_job.Schedule(handle_); ++idx;
             handle_s[idx] = n_job.Schedule(handle_); ++idx;
             handle_s[idx] = u_job.Schedule(handle_); ++idx;
@@ -328,7 +328,7 @@ public class TrailRendererSystem : ComponentSystem
 	}
 	[Inject] Group group_;
 
-    protected override void OnCreateManager(int capacity /* vestigial */)
+    protected override void OnCreateManager()
     {
         mesh_ = new Mesh();
 		mesh_.bounds = new Bounds(Vector3.zero, Vector3.one * 99999999); // invalidate bounds.

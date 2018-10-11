@@ -42,7 +42,7 @@ public class TrailTestSystem : TestJobComponentSystem
             pos.Value.x += math.cos(time_*(8f+(float)i/10f)) * scale;
             pos.Value.y += math.sin(time_*(7f+(float)i/10f)) * scale;
             pos.Value.z += math.sin(time_*(5f+(float)i/10f)) * scale;
-            rot.Value = quaternion.euler(time_*0.1f, time_*0.2f, time_*0.3f);
+            rot.Value = quaternion.EulerZXY(time_*0.1f, time_*0.2f, time_*0.3f);
 
             group_.rotation_list_[i] = rot;
             group_.position_list_[i] = pos;

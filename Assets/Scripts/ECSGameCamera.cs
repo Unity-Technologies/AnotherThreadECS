@@ -13,6 +13,7 @@ using UnityEngine.Jobs;
 
 namespace UTJ {
 
+[System.Serializable]
 public struct GameCamera : IComponentData
 {
     public Entity player_entity_;
@@ -74,7 +75,7 @@ public class GameCameraUpdateSystem : JobComponentSystem
             diff.x = diff.x * 0.5f;
             diff.y = diff.y * 0.5f;
             game_camera.look_target_ = math.lerp(game_camera.look_target_, diff, 0.2f);
-            var rot = math.mul(quaternion.euler(0f, 0f, roll), quaternion.lookRotation(game_camera.look_target_, new float3(0f, 1f, 0f)));
+            var rot = math.mul(quaternion.EulerZXY(0f, 0f, roll), quaternion.LookRotation(game_camera.look_target_, new float3(0f, 1f, 0f)));
             
             rotation_list_[i] = new Rotation { Value = rot, };
             game_camera_list_[i] = game_camera;

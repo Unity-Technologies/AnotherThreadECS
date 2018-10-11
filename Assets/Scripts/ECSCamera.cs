@@ -13,6 +13,7 @@ using UnityEngine.Jobs;
 
 namespace UTJ {
 
+[System.Serializable]
 public struct Camera : IComponentData
 {
     public const float SCREEN_HEIGHT = 180f; // size of FinalCamera

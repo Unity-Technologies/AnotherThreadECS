@@ -9,7 +9,8 @@ using Unity.Collections;
 using Unity.Jobs;
 // using Unity.Burst;
 using UnityEngine.Assertions;
-using TestJobComponentSystem = TestInterface.JobComponentSystem;
+using TestComponentSystem = TestInterface.ComponentSystem;
+// using TestComponentSystem = Unity.Entities.ComponentSystem;
 
 namespace UTJ {
 
@@ -17,7 +18,7 @@ public struct SightTestDummy : IComponentData
 {
 }
 
-public class SightTestSystem : TestJobComponentSystem
+public class SightTestSystem : TestComponentSystem
 {
     struct Group {
         public readonly int Length;
@@ -35,39 +36,17 @@ public class SightTestSystem : TestJobComponentSystem
     }
     [Inject] ParentGroup parent_group_;
 
-    class Barrier : BarrierSystem {}
-    [Inject] Barrier barrier_;
-
-    // [BurstCompile]
-    struct Job : IJobParallelFor
+	protected override void OnUpdate()
     {
-        public float time_;
-        public EntityCommandBuffer.Concurrent command_buffer_;
-        [ReadOnly] public EntityArray sight_parent_entity_array_;
-        
-        public void Execute(int i)
-        {
-            ECSSightManager.spawnSight(command_buffer_,
-                                       time_,
-                                       sight_parent_entity_array_[0]);
-        }
-    }
-
-	protected override JobHandle OnUpdate(JobHandle inputDeps)
-    {
-        var handle = inputDeps;
-
         if (Random.Range(0, 100) < 2) {
             Assert.AreEqual(parent_group_.Length, 1);
-            var job = new Job {
-                time_ = Time.GetCurrent(),
-                command_buffer_ = barrier_.CreateCommandBuffer(),
-                sight_parent_entity_array_ = parent_group_.entity_array_,
-            };
-            handle = job.Schedule(group_.Length, 8, handle);
+            for (var i = 0; i < parent_group_.Length; ++i) {
+                var time = Time.GetCurrent();
+                ECSSightManager.spawnSight(PostUpdateCommands,
+                                           time,
+                                           parent_group_.entity_array_[i]);
+            }
         }
-
-        return handle;
     }    
 }
 

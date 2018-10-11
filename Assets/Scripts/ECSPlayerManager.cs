@@ -46,6 +46,7 @@ public struct Player : IComponentData
 
 [UpdateBefore(typeof(RigidbodyPositionSystem))]
 [UpdateBefore(typeof(RigidbodyRotationSystem))]
+[UpdateBefore(typeof(CollisionSystem))]
 public class PlayerSystem : JobComponentSystem
 {
     const int LASER_MAX = 16;
@@ -80,7 +81,8 @@ public class PlayerSystem : JobComponentSystem
     public static JobHandle Fence { get { return handle_; } }
     public static void Sync() { handle_.Complete(); }
 
-    [UpdateBefore(typeof(Unity.Rendering.MeshInstanceRendererSystem))] class PlayerBarrier : BarrierSystem {}
+    // [UpdateBefore(typeof(Unity.Rendering.MeshInstanceRendererSystem))]
+    class PlayerBarrier : BarrierSystem {}
     [Inject] PlayerBarrier barrier_;
 
     [Inject] GameCameraUpdateSystem game_camera_update_system_;
@@ -318,6 +320,7 @@ public class PlayerSystem : JobComponentSystem
 
 	protected override JobHandle OnUpdate(JobHandle inputDeps)
 	{
+        CollisionSystem.Sync();
         CursorSystem.Sync();
         game_camera_update_system_.Sync();
 

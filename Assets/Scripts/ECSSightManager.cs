@@ -22,8 +22,8 @@ public struct SightSpawnData
     public Entity target_entity_;
 }
 
-[UpdateBefore(typeof(PlayerSystem))]
-[UpdateBefore(typeof(Unity.Rendering.MeshInstanceRendererSystem))] 
+// [UpdateBefore(typeof(PlayerSystem))]
+// [UpdateBefore(typeof(Unity.Rendering.MeshInstanceRendererSystem))] 
 public class SightSpawnSystem : ComponentSystem
 {
     struct SightSpawnIgniter : IComponentData {}

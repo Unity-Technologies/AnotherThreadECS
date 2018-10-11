@@ -18,7 +18,7 @@ public struct SparkSpawnData
     public int type_;                  // 0: Player	1: Enemy
 }
 
-[UpdateBefore(typeof(Unity.Rendering.MeshInstanceRendererSystem))] 
+// [UpdateBefore(typeof(Unity.Rendering.MeshInstanceRendererSystem))] 
 public class SparkSpawnSystem : ComponentSystem
 {
     struct SparkSpawnIgniter : IComponentData {}

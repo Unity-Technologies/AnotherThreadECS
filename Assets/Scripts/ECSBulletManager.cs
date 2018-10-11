@@ -17,7 +17,7 @@ public struct BulletSpawnData
     public int type_;                  // 0: Player	1: Enemy
 }
 
-[UpdateBefore(typeof(Unity.Rendering.MeshInstanceRendererSystem))] 
+// [UpdateBefore(typeof(Unity.Rendering.MeshInstanceRendererSystem))] 
 public class BulletSpawnSystem : ComponentSystem
 {
     struct BulletSpawnIgniter : IComponentData {}
@@ -55,7 +55,7 @@ public class BulletSpawnSystem : ComponentSystem
     }    
 }
 
-[UpdateAfter(typeof(SparkSpawnSystem))]
+// [UpdateAfter(typeof(SparkSpawnSystem))]
 public class BulletSystem : JobComponentSystem
 {
     struct PlayerBulletGroup

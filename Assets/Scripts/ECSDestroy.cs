@@ -12,7 +12,7 @@ public struct Destroyable : IComponentData
     public static Destroyable Kill { get { return new Destroyable { killed_ = 1, }; } }
 }
 
-[UpdateAfter(typeof(TrailRendererSystem))]
+// [UpdateAfter(typeof(TrailRendererSystem))]
 public class DestroyableSsytem : JobComponentSystem
 {
 	struct Group
@@ -32,13 +32,15 @@ public class DestroyableSsytem : JobComponentSystem
     }
     [Inject] ChildGroup child_group_;
 
-    [UpdateBefore(typeof(Unity.Rendering.MeshInstanceRendererSystem))] class DestroyBarrier : BarrierSystem {}
+    // [UpdateBefore(typeof(Unity.Rendering.MeshInstanceRendererSystem))]
+    class DestroyBarrier : BarrierSystem {}
     [Inject] DestroyBarrier barrier_;
 
     [BurstCompile]
     struct Job : IJobParallelFor
     {
         public EntityCommandBuffer.Concurrent command_buffer_;
+        [ReadOnly] public ComponentDataFromEntity<Destroyable> destroyable_list_from_entity_;
         [ReadOnly] public EntityArray entity_list_;
 		[ReadOnly] public ComponentDataArray<Destroyable> destroyable_list_;
 
@@ -46,7 +48,9 @@ public class DestroyableSsytem : JobComponentSystem
         {
             Destroyable d = destroyable_list_[i];
             if (d.killed_ != 0) {
-                command_buffer_.DestroyEntity(i /* job_index */, entity_list_[i]);
+                if (destroyable_list_from_entity_.Exists(entity_list_[i])) {
+                    command_buffer_.DestroyEntity(i /* job_index */, entity_list_[i]);
+                }
             }
         }
     }
@@ -64,7 +68,9 @@ public class DestroyableSsytem : JobComponentSystem
             Parent parent = parent_list_[i];
             if (!destroyable_list_from_entity_.Exists(parent.Value) ||
                 destroyable_list_from_entity_[parent.Value].killed_ != 0) {
-                command_buffer_.DestroyEntity(i /* job_index */, entity_list_[i]);
+                if (destroyable_list_from_entity_.Exists(entity_list_[i])) {
+                    command_buffer_.DestroyEntity(i /* job_index */, entity_list_[i]);
+                }
             }
         }
     }
@@ -75,6 +81,7 @@ public class DestroyableSsytem : JobComponentSystem
 
         var job = new Job {
             command_buffer_ = barrier_.CreateCommandBuffer().ToConcurrent(),
+            destroyable_list_from_entity_ = destroyable_list_from_entity_,
             entity_list_ = group_.entity_list_,
             destroyable_list_ = group_.destroyable_list_,
         };

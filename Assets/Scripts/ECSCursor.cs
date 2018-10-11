@@ -18,7 +18,7 @@ public struct Cursor : IComponentData
     public static Cursor Create(Entity player_entity) { return new Cursor { player_entity_ = player_entity, }; }
 }
 
-[UpdateAfter(typeof(PlayerSystem))]
+// [UpdateAfter(typeof(PlayerSystem))]
 public class CursorSystem : JobComponentSystem
 {
     [Inject] [ReadOnly] public ComponentDataFromEntity<Player> player_list_from_entity_;

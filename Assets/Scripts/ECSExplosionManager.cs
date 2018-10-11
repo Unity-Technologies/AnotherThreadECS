@@ -12,7 +12,7 @@ public struct ExplosionSpawnData
     public float3 position_;
 }
 
-[UpdateBefore(typeof(Unity.Rendering.MeshInstanceRendererSystem))] 
+// [UpdateBefore(typeof(Unity.Rendering.MeshInstanceRendererSystem))] 
 public class ExplosionSpawnSystem : ComponentSystem
 {
     struct ExplosionSpawnIgniter : IComponentData {}

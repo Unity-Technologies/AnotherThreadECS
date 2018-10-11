@@ -27,7 +27,7 @@ public struct GameCamera : IComponentData
     }
 }
 
-[UpdateAfter(typeof(PlayerSystem))]
+// [UpdateAfter(typeof(PlayerSystem))]
 public class GameCameraUpdateSystem : JobComponentSystem
 {
     [Inject] [ReadOnly] public ComponentDataFromEntity<Player> player_list_from_entity_;

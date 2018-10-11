@@ -53,6 +53,7 @@ public struct SphereCollider  : IComponentData
 }
 
 [UpdateAfter(typeof(Unity.Rendering.MeshInstanceRendererSystem))]
+[UpdateAfter(typeof(CustomMeshInstanceRendererSystem))]
 public class ColliderUpdateSystem : JobComponentSystem
 {
 	public struct ColliderUpdateJob : IJobProcessComponentData<Position, Rotation, SphereCollider>

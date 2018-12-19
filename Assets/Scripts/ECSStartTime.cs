@@ -95,9 +95,9 @@ public class StartTimeRendererSystem : ComponentSystem
             }
             m_Camera = camera;
         }
-        var foundArchetypes = new NativeList<EntityArchetype>(Allocator.Temp);
+        var foundArchetypes = new NativeList<EntityArchetype>(Allocator.TempJob);
         EntityManager.AddMatchingArchetypes(m_Query, foundArchetypes);
-        var chunks = EntityManager.CreateArchetypeChunkArray(foundArchetypes, Allocator.Temp);
+        var chunks = EntityManager.CreateArchetypeChunkArray(foundArchetypes, Allocator.TempJob);
         var meshInstanceRendererType = GetArchetypeChunkSharedComponentType<MeshInstanceRenderer>();
         var customMeshInstanceRendererType = GetArchetypeChunkSharedComponentType<CustomMeshInstanceRenderer>();
         var matrix = m_PrevInvMatrix * m_Camera.cameraToWorldMatrix; // prev-view * inverted-cur-view

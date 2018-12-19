@@ -16,6 +16,7 @@ public struct Zako : IComponentData
 }
 
 // [UpdateBefore(typeof(RigidbodyPositionSystem))]
+[UpdateAfter(typeof(BulletSpawnSystem))]
 public class ZakoSystem : JobComponentSystem
 {
     [Inject] [ReadOnly] public ComponentDataFromEntity<Position> position_list_from_entity_;
